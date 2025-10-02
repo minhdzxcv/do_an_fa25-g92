@@ -54,7 +54,7 @@ const Footer = () => {
             <div className="col-md-6 col-lg-3">
               <h4>Địa chỉ</h4>
               <p>
-                123 GenSpa Street, Quận Cầu Giấy , TP.Hà Nội
+                123 GenSpa Street, Quận 1, TP.HCM
                 <br />
                 Mở cửa: 9:00 – 21:00
               </p>
