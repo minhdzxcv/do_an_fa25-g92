@@ -3,31 +3,30 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
-export class Admin {
+export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  username: string;
-
   @Column()
-  full_name: string;
+  name: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  description: string;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @Column()
-  refreshToken: string;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
 
-  @CreateDateColumn({})
+  @CreateDateColumn()
   createdAt: Date;
 
-  @CreateDateColumn({})
+  @UpdateDateColumn()
   updatedAt: Date;
 }
