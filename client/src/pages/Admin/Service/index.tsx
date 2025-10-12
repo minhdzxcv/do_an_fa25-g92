@@ -1,17 +1,18 @@
 import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import AddSpa from "./add";
-import UpdateSpa from "./update";
 import { showError, showSuccess } from "@/libs/toast";
 import {
-  useDeleteCategoryMutation,
+  useDeleteServiceMutation,
   useGetCategoriesMutation,
+  useGetServicesMutation,
 } from "@/services/services";
-import type { categoriesModelTable } from "./_components/type";
-import { categoriesColumn } from "./_components/columnTypes";
+import { servicesColumn } from "./_components/columnTypes";
+import type { servicesModelTable } from "./_components/type";
+import UpdateService from "./update";
+import AddService from "./add";
 import useDebounce from "@/hooks/UseDebounce";
-
-export default function Categories() {
+import type { categoriesModelTable } from "../Categories/_components/type";
+export default function Services() {
   //   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -20,73 +21,9 @@ export default function Categories() {
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
+  const [services, setServices] = useState<servicesModelTable[]>([]);
+
   const [categories, setCategories] = useState<categoriesModelTable[]>([]);
-
-  const handleUpdate = (id: string) => {
-    setUpdateId(id);
-    setUpdateState(true);
-  };
-
-  useEffect(() => {
-    handleGetCategories();
-  }, []);
-
-  const [deleteCategory] = useDeleteCategoryMutation();
-
-  const handleDelete = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const res = await deleteCategory(id);
-      console.log("res", res);
-      if (res && res.data !== undefined) {
-        handleEvent();
-        showSuccess("Xoá danh mục thành công");
-      } else {
-        showError("Xoá danh mục thất bại", "Đã xảy ra lỗi khi xoá danh mục.");
-      }
-    } catch {
-      showError("Xoá danh mục thất bại", "Đã xảy ra lỗi khi xoá danh mục.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const [search, setSearch] = useState<string>("");
-
-  const debouncedSearch = useDebounce(search, 500);
-
-  const filteredCategories = useMemo(() => {
-    if (!debouncedSearch) return categories;
-    return categories.filter((category) =>
-      category.name
-        ?.toLowerCase()
-        .includes(debouncedSearch.trim().toLowerCase())
-    );
-  }, [categories, debouncedSearch]);
-
-  //   const handleDisable = async (username: string, status: string) => {
-  //     setIsLoading(true);
-  //     if (status === "ACTIVE") {
-  //       try {
-  //         const res = await instance.post(
-  //           `/account-management/disable-account/${username}`
-  //         );
-  //         if (res.data.statusCode === 200) {
-  //         } else {
-  //         }
-  //       } catch (error) {}
-  //     } else if (status === "") {
-  //       try {
-  //         const res = await instance.post(
-  //           `/account-management/active-account/${username}`
-  //         );
-  //         if (res.data.statusCode === 200) {
-  //         } else {
-  //         }
-  //       } catch (error) {}
-  //     }
-  //     setIsLoading(false);
-  //   };
 
   const [getCategories] = useGetCategoriesMutation();
 
@@ -116,8 +53,101 @@ export default function Categories() {
     }
   };
 
-  const handleEvent = () => {
+  const handleUpdate = (id: string) => {
+    setUpdateId(id);
+    setUpdateState(true);
+  };
+
+  useEffect(() => {
+    handleGetServices();
     handleGetCategories();
+  }, []);
+
+  const [deleteService] = useDeleteServiceMutation();
+
+  const handleDelete = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await deleteService(id);
+      console.log("res", res);
+      if (res && res.data !== undefined) {
+        handleEvent();
+        showSuccess("Xoá dịch vụ thành công");
+      } else {
+        showError("Xoá dịch vụ thất bại", "Đã xảy ra lỗi khi xoá dịch vụ.");
+      }
+    } catch {
+      showError("Xoá dịch vụ thất bại", "Đã xảy ra lỗi khi xoá dịch vụ.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [search, setSearch] = useState<string>("");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const filteredServices = useMemo(() => {
+    if (!debouncedSearch) return services;
+    return services.filter((service) =>
+      service.name?.toLowerCase().includes(debouncedSearch.trim().toLowerCase())
+    );
+  }, [services, debouncedSearch]);
+
+  //   const handleDisable = async (username: string, status: string) => {
+  //     setIsLoading(true);
+  //     if (status === "ACTIVE") {
+  //       try {
+  //         const res = await instance.post(
+  //           `/account-management/disable-account/${username}`
+  //         );
+  //         if (res.data.statusCode === 200) {
+  //         } else {
+  //         }
+  //       } catch (error) {}
+  //     } else if (status === "") {
+  //       try {
+  //         const res = await instance.post(
+  //           `/account-management/active-account/${username}`
+  //         );
+  //         if (res.data.statusCode === 200) {
+  //         } else {
+  //         }
+  //       } catch (error) {}
+  //     }
+  //     setIsLoading(false);
+  //   };
+
+  const [getServices] = useGetServicesMutation();
+
+  const handleGetServices = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getServices({});
+
+      const tempRes = res.data;
+
+      setServices(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (tempRes ?? []).map((service: any) => ({
+          ...service,
+          onUpdate: () => handleUpdate(service.id),
+          onRemove: () => handleDelete(service.id),
+        }))
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showError("Error", error.message);
+      } else {
+        showError("Error", "An unexpected error occurred.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEvent = () => {
+    handleGetServices();
   };
 
   return (
@@ -127,7 +157,7 @@ export default function Categories() {
           <Row justify={"space-between"} style={{ marginBottom: 16 }}>
             <Col>
               <h4>
-                <strong>{"Danh muc"}</strong> <br />
+                <strong>{"Dịch vụ"}</strong> <br />
               </h4>
               {/* <Breadcrumb
               items={[
@@ -147,17 +177,21 @@ export default function Categories() {
             <Col>
               <Space>
                 <Input.Search
-                  placeholder="Tìm theo tên danh mục..."
+                  placeholder="Tìm theo tên dịch vụ..."
                   allowClear
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   style={{ width: 250 }}
                 />
                 <Divider type="vertical" />
-                <Button type="primary" onClick={() => setCreateState(true)}>
-                  {"Tạo danh mục"}
+                <Button
+                  type="primary"
+                  onClick={() => setCreateState(true)}
+                  // disabled={isAdmin}
+                >
+                  {"Tạo dịch vụ"}
                 </Button>
-                <AddSpa
+                <AddService
                   isOpen={createState}
                   onClose={() => setCreateState(false)}
                   onReload={handleEvent}
@@ -187,20 +221,20 @@ export default function Categories() {
             //       }
             //     },
             //   })}
-            columns={categoriesColumn()}
+            columns={servicesColumn(categories)}
             dataSource={
-              Array.isArray(filteredCategories) && filteredCategories.length > 0
-                ? filteredCategories.map((category) => ({
-                    ...category,
-                    onUpdate: () => handleUpdate(category.id),
-                    onRemove: () => handleDelete(category.id),
+              Array.isArray(filteredServices) && filteredServices.length > 0
+                ? filteredServices.map((service) => ({
+                    ...service,
+                    onUpdate: () => handleUpdate(service.id),
+                    onRemove: () => handleDelete(service.id),
                   }))
                 : []
             }
             scroll={{ x: "max-content" }}
             tableLayout="fixed"
           />
-          <UpdateSpa
+          <UpdateService
             id={updateId}
             isOpen={updateState}
             onClose={() => setUpdateState(false)}
