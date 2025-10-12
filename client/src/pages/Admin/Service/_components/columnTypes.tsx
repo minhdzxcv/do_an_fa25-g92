@@ -5,9 +5,12 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { categoriesModelTable } from "./type";
+import type { servicesModelTable } from "./type";
+import type { categoriesModelTable } from "../../Categories/_components/type";
 
-export const categoriesColumn = (): ColumnsType<categoriesModelTable> => [
+export const servicesColumn = (
+  categories: categoriesModelTable[]
+): ColumnsType<servicesModelTable> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -18,8 +21,57 @@ export const categoriesColumn = (): ColumnsType<categoriesModelTable> => [
     },
   },
   {
-    title: "Tên danh mục",
+    title: "Hình ảnh",
+    dataIndex: "images",
+    width: 80,
+    render: (images) => {
+      const url = images?.[0]?.url;
+      return url ? (
+        <img
+          src={url}
+          alt="thumbnail"
+          style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 8 }}
+        />
+      ) : (
+        <span className="text-muted fst-italic">Không có ảnh</span>
+      );
+    },
+  },
+  {
+    title: "Tên dịch vụ",
     dataIndex: "name",
+  },
+  {
+    title: "Giá",
+    dataIndex: "price",
+    render: (price) => {
+      return <span>{new Intl.NumberFormat("vi-VN").format(price)} đ</span>;
+    },
+    sorter: (a, b) => a.price - b.price,
+    // defaultSortOrder: "ascend",
+  },
+  {
+    title: "Mô tả",
+    dataIndex: "description",
+    render: (description) => {
+      return (
+        <span className="text-muted fst-italic">
+          {description || "Không có mô tả"}
+        </span>
+      );
+    },
+  },
+  {
+    title: "Danh mục",
+    dataIndex: "categoryName",
+    render: (_, record) => {
+      return <span>{record.category?.name || "Chưa có danh mục"}</span>;
+    },
+    filters: categories.map((category) => ({
+      text: category.name,
+      value: category.id,
+    })),
+    onFilter: (value, record) => record.categoryId === value,
   },
   {
     title: "Trạng thái",

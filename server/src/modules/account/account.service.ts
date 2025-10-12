@@ -15,6 +15,7 @@ import omit from 'lodash/omit';
 import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
+import { CreateInternalDto, UpdateInternalDto } from './dto/internal.dto';
 
 @Injectable()
 export class AccountService {
@@ -151,4 +152,158 @@ export class AccountService {
   }
 
   //////////////////////////////////////////////
+
+  async createInternal(data: CreateInternalDto): Promise<Internal> {
+    const existingRole = await this.checkDuplicateEmailWithRole(data.email);
+    if (existingRole) {
+      throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
+    }
+
+    const existingRoleEntity = await this.roleRepository.findOne({
+      where: { id: Number(data.positionID) },
+    });
+
+    if (!existingRoleEntity || existingRoleEntity.name === 'admin') {
+      throw new HttpException('Chức vụ không hợp lệ', HttpStatus.BAD_REQUEST);
+    }
+
+    const staff = this.internalRepository.create({
+      ...data,
+      password: await hashPassword(data.password),
+      refreshToken: '',
+      role: existingRoleEntity,
+    });
+
+    return this.internalRepository.save(staff);
+  }
+
+  async findAllInternals(): Promise<Internal[]> {
+    const result = await this.internalRepository
+      .createQueryBuilder('internal')
+      .leftJoinAndSelect('internal.role', 'role')
+      // .where('role.name != :roleName', { roleName: 'admin' })
+      .getMany();
+
+    return result;
+  }
+
+  async findOneInternal(id: string): Promise<Internal> {
+    const staff = await this.internalRepository.findOne({
+      where: { id },
+      relations: ['role'],
+    });
+
+    if (!staff) throw new NotFoundException('Không tìm thấy nhân viên');
+    return staff;
+  }
+
+  async updateInternal(id: string, data: UpdateInternalDto): Promise<Internal> {
+    const staff = await this.findOneInternal(id);
+
+    if (data.email && data.email !== staff.email) {
+      const existingRole = await this.checkDuplicateEmailWithRole(data.email);
+      if (existingRole) {
+        throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
+      }
+    }
+
+    Object.assign(staff, data);
+    return this.internalRepository.save(staff);
+  }
+
+  async toggleInternalActive(id: string): Promise<Internal> {
+    const staff = await this.findOneInternal(id);
+    staff.isActive = !staff.isActive;
+    return this.internalRepository.save(staff);
+  }
+
+  async removeInternal(id: string): Promise<{ message: string }> {
+    const staff = await this.internalRepository.findOne({
+      where: { id },
+      relations: ['role'],
+    });
+
+    if (!staff) {
+      throw new NotFoundException('Không tìm thấy nhân viên');
+    }
+
+    if (staff.role.name === 'admin') {
+      throw new HttpException(
+        'Không thể xóa nhân viên này',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await this.internalRepository.softRemove(staff);
+
+    return {
+      message: `Đã xóa nhân viên "${staff.full_name}" thành công.`,
+    };
+  }
+
+  async updateInternalPassword(data: {
+    id: string;
+    newPassword: string;
+  }): Promise<Internal> {
+    const staff = await this.findOneInternal(data.id);
+    staff.password = await hashPassword(data.newPassword);
+    return this.internalRepository.save(staff);
+  }
+
+  async findAllInternalRoles(): Promise<Role[]> {
+    return this.roleRepository.find();
+  }
+
+  //////////////////////////////////////////////
+
+  async createDoctor(data: CreateInternalDto): Promise<Doctor> {
+    const existingRole = await this.checkDuplicateEmailWithRole(data.email);
+    if (existingRole) {
+      throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
+    }
+
+    const doctor = this.doctorRepository.create({
+      ...data,
+      password: await hashPassword(data.password),
+      refreshToken: '',
+    });
+
+    return this.doctorRepository.save(doctor);
+  }
+
+  async findAllDoctors(): Promise<Doctor[]> {
+    return this.doctorRepository.find();
+  }
+
+  async findOneDoctor(id: string): Promise<Doctor> {
+    const doctor = await this.doctorRepository.findOne({ where: { id } });
+    if (!doctor) throw new NotFoundException('Doctor not found');
+    return doctor;
+  }
+
+  async updateDoctor(id: string, data: UpdateInternalDto): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+    Object.assign(doctor, data);
+    return this.doctorRepository.save(doctor);
+  }
+
+  async removeDoctor(id: string): Promise<void> {
+    const doctor = await this.findOneDoctor(id);
+    await this.doctorRepository.remove(doctor);
+  }
+
+  async updateDoctorPassword(data: {
+    id: string;
+    newPassword: string;
+  }): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(data.id);
+    doctor.password = await hashPassword(data.newPassword);
+    return this.doctorRepository.save(doctor);
+  }
+
+  async toggleDoctorActive(id: string): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+    doctor.isActive = !doctor.isActive;
+    return this.doctorRepository.save(doctor);
+  }
 }
