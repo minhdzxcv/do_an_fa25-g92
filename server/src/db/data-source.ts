@@ -1,5 +1,8 @@
 import { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 // import glob from 'fast-glob';
 
 // const entityPaths = glob.sync('src/entities/*.entity.{ts,js}');
