@@ -1,53 +1,63 @@
-import { Button, Dropdown, Space, Tag, type MenuProps } from "antd";
+import { Button, Dropdown, Space, Tag, Tooltip, type MenuProps } from "antd";
 import {
   EllipsisOutlined,
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import type { CustomerModelTable } from "./type";
 import type { ColumnsType } from "antd/es/table";
-import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
+import type { CustomerModelTable } from "./type";
 import AvatarTable from "@/components/AvatarTable";
+import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+const customerTypeColor = {
+  regular: "green",
+  vip: "gold",
+  member: "blue",
+  trial: "default",
+};
 
 export const customerColumn = (): ColumnsType<CustomerModelTable> => [
   {
     title: "STT",
     dataIndex: "index",
-    width: 50,
-    // fixed: "center",
-    render: (_, __, index) => {
-      return <span>{index + 1}</span>;
-    },
+    width: 60,
+    align: "center",
+    render: (_, __, index) => <span>{index + 1}</span>,
   },
   {
-    title: "Avatar",
-    dataIndex: "avatar",
-    render: (_, record) => {
-      return (
+    title: "Khách hàng",
+    dataIndex: "full_name",
+    render: (_, record) => (
+      <Space size={12}>
         <AvatarTable
           src={record.avatar ?? NoAvatarImage}
-          alt={"avatar"}
-          // className={cx("user-avatar")}
+          alt="avatar"
           fallback={NoAvatarImage}
         />
-      );
-    },
-  },
-  {
-    title: "Họ và tên",
-    dataIndex: "full_name",
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>
+            {record.full_name}
+          </div>
+          <div style={{ color: "#8c8c8c", fontSize: 12 }}>{record.email}</div>
+        </div>
+      </Space>
+    ),
   },
   {
     title: "Giới tính",
     dataIndex: "gender",
+    align: "center",
     render: (text) => {
-      return (
-        <Tag
-          color={text === "male" ? "blue" : text === "female" ? "pink" : "gray"}
-        >
-          {text === "male" ? "Nam" : text === "female" ? "Nữ" : "Khác"}
-        </Tag>
-      );
+      const genderMap: Record<string, { label: string; color: string }> = {
+        male: { label: "Nam", color: "geekblue" },
+        female: { label: "Nữ", color: "magenta" },
+        other: { label: "Khác", color: "default" },
+      };
+      const { label, color } = genderMap[text] || genderMap.other;
+      return <Tag color={color}>{label}</Tag>;
     },
     filters: [
       { text: "Nam", value: "male" },
@@ -57,23 +67,19 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     onFilter: (value, record) => record.gender === value,
   },
   {
-    title: "Email",
-    dataIndex: "email",
-  },
-  {
     title: "Số điện thoại",
     dataIndex: "phone",
+    width: 140,
   },
-  // {
-  //   title: "Địa chỉ",
-  //   dataIndex: "address",
-  // },
   {
     title: "Loại khách hàng",
     dataIndex: "customer_type",
-    render: (text) => {
+    align: "center",
+    render: (text: string) => {
+      const key = text as keyof typeof customerTypeColor;
+      const color = customerTypeColor[key] ?? "default";
       return (
-        <Tag color={text === "vip" ? "gold" : "green"}>
+        <Tag color={color} style={{ fontWeight: 500 }}>
           {text === "regular"
             ? "Thường"
             : text === "vip"
@@ -94,23 +100,21 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
   {
     title: "Tổng chi tiêu",
     dataIndex: "total_spent",
-    render: (text) => {
-      return <span>{text} VNĐ</span>;
-    },
+    align: "right",
     sorter: (a, b) => Number(a.total_spent) - Number(b.total_spent),
+    render: (value) => (
+      <span style={{ fontWeight: 500 }}>{formatCurrency(Number(value))}</span>
+    ),
   },
   {
     title: "Trạng thái",
     dataIndex: "isActive",
-    render: (_, record) => {
-      return (
-        <>
-          <Tag color="lime">
-            {record.isActive ? "Kích hoạt" : "Ngừng kích hoạt"}
-          </Tag>
-        </>
-      );
-    },
+    align: "center",
+    render: (_, record) => (
+      <Tag color={record.isActive ? "success" : "error"}>
+        {record.isActive ? "Kích hoạt" : "Ngừng kích hoạt"}
+      </Tag>
+    ),
     filters: [
       { text: "Kích hoạt", value: true },
       { text: "Ngừng kích hoạt", value: false },
@@ -121,74 +125,43 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     title: "",
     dataIndex: "operation",
     fixed: "right",
-    align: "right",
+    align: "center",
     render: (_, record) => {
-      const renderItems = (
-        onUpdate: () => void,
-        onRemove: () => void
-      ): MenuProps["items"] => {
-        return [
-          {
-            label: (
-              <a
-                onClick={() => {
-                  onUpdate?.();
-                }}
-              >
-                <Space>
-                  <EditOutlined /> {"Cập nhật"}
-                </Space>
-              </a>
-            ),
-            key: "0",
-          },
-          // {
-          //   label: (
-          //     <a
-          //       onClick={() => {
-          //         onDisable?.();
-          //       }}
-          //     >
-          //       <Space>
-          //         <MdDisabledByDefault /> Disable
-          //       </Space>
-          //     </a>
-          //   ),
-          //   key: '1'
-          // },
-          {
-            type: "divider",
-          },
-          {
-            label: (
-              <div
-                onClick={() => {
-                  onRemove?.();
-                }}
-              >
-                <Space>
-                  <DeleteOutlined /> {"Xóa"}
-                </Space>
-              </div>
-            ),
-            key: "2",
-          },
-        ];
-      };
-      return (
-        <>
-          <Dropdown
-            menu={{
-              items: renderItems(record.onUpdate!, record.onRemove!),
-            }}
-          >
-            <a onClick={(e) => e.preventDefault()}>
+      const menuItems: MenuProps["items"] = [
+        {
+          key: "edit",
+          label: (
+            <div onClick={() => record.onUpdate?.()}>
               <Space>
-                <Button type="text" icon={<EllipsisOutlined />}></Button>
+                <EditOutlined /> Cập nhật
               </Space>
-            </a>
+            </div>
+          ),
+        },
+        {
+          type: "divider",
+        },
+        {
+          key: "delete",
+          label: (
+            <div onClick={() => record.onRemove?.()}>
+              <Space>
+                <DeleteOutlined /> Xóa
+              </Space>
+            </div>
+          ),
+        },
+      ];
+
+      return (
+        <Tooltip title="Thao tác" placement="left">
+          <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+            <Button
+              type="text"
+              icon={<EllipsisOutlined style={{ fontSize: 18 }} />}
+            />
           </Dropdown>
-        </>
+        </Tooltip>
       );
     },
   },

@@ -7,6 +7,12 @@
     --color-muted: #c9c1b8;
     --color-dark: #2f3e46;
     --color-light: #ffffff;
+    --color-dark-light: #f2f4f7;
+    --color-dark-gray: #e4e7ec;
+    --color-darker-gray: #344054;
+    --color-black: #1d2939;
+    --color-text: #1d2939;
+
 
     --blue: #007bff;
     --indigo: #6610f2;
@@ -40,6 +46,12 @@
     // --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     //     'Courier New', monospace;
 }
+
+[data-theme="dark"] {
+    --color-text: #e4e7ec;
+    --color-bg: #101828;
+}
+
 
 .cus-btn-primary {
     background-color: var(--color-accent) !important;
@@ -165,4 +177,49 @@
 
 :where(.ant-select) .ant-select-item-option-active {
     background-color: #f8f9fa;
+}
+
+.gray-400 {
+    color: #667085 !important;
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ff6a88, #ff99ac);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.card-box-dashboard {
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    // overflow: hidden;
+    // color: #fff;
+}
+
+.overview-title {
+    position: relative;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.overview-title::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
 }

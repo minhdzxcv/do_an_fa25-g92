@@ -20,30 +20,46 @@ export const staffColumn = (): ColumnsType<StaffData> => [
     },
   },
   {
-    title: "Avatar",
-    dataIndex: "avatar",
-    render: (_, record) => {
-      return (
+    title: "Nhân viên",
+    dataIndex: "full_name",
+    render: (_, record) => (
+      <Space size={12}>
         <AvatarTable
           src={record.avatar ?? NoAvatarImage}
-          alt={"avatar"}
-          // className={cx("user-avatar")}
+          alt="avatar"
           fallback={NoAvatarImage}
         />
-      );
-    },
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>
+            {record.full_name}
+          </div>
+          <div style={{ color: "#8c8c8c", fontSize: 12 }}>{record.email}</div>
+        </div>
+      </Space>
+    ),
   },
   {
-    title: "Tên nhân viên",
-    dataIndex: "full_name",
+    title: "Giới tính",
+    dataIndex: "gender",
+    render: (text) => {
+      return (
+        <Tag
+          color={text === "male" ? "blue" : text === "female" ? "pink" : "gray"}
+        >
+          {text === "male" ? "Nam" : text === "female" ? "Nữ" : "Khác"}
+        </Tag>
+      );
+    },
+    filters: [
+      { text: "Nam", value: "male" },
+      { text: "Nữ", value: "female" },
+      { text: "Khác", value: "other" },
+    ],
+    onFilter: (value, record) => record.gender === value,
   },
   {
     title: "Số điện thoại",
     dataIndex: "phone",
-  },
-  {
-    title: "Email",
-    dataIndex: "email",
   },
   {
     title: "Trạng thái",
