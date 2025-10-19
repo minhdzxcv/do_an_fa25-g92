@@ -31,9 +31,6 @@ export class ServiceService {
         deletedAt: IsNull(),
       },
       relations: ['category'],
-      order:{
-        createdAt:'DESC'
-      }
     });
 
     return services;
