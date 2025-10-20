@@ -2,7 +2,7 @@ import { Card, Col, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { DoctorModelTable } from "./_components/type";
 import {
-  useDeleteCustomerMutation,
+  useDeleteDoctorMutation,
   useGetDoctorsMutation,
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
@@ -17,6 +17,7 @@ import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import { doctorColumn } from "./_components/columnTypes";
 import AddDoctor from "./add";
 import UpdateDoctor from "./update";
+import FancyCounting from "@/components/FancyCounting";
 
 // import styles from "./AccountCustomer.module.scss";
 // import classNames from "classnames/bind";
@@ -41,7 +42,7 @@ export default function AccountDoctor() {
     setUpdateState(true);
   };
 
-  const [deleteCustomer] = useDeleteCustomerMutation();
+  const [deleteDoctor] = useDeleteDoctorMutation();
 
   const [search, setSearch] = useState<string>("");
 
@@ -59,7 +60,7 @@ export default function AccountDoctor() {
   const handleDelete = async (id: string) => {
     setIsLoading(true);
     try {
-      const res = await deleteCustomer(id);
+      const res = await deleteDoctor(id);
       if (res.data) {
         handleEvent();
         showSuccess("Xoá tài khoản thành công");
@@ -185,7 +186,7 @@ export default function AccountDoctor() {
           </Col>
         </Row>
 
-        {/* <Row className="stats-card">
+        <Row className="stats-card">
           <Col className="metric">
             <p className="metric-label">{"Tổng số bác sĩ"}</p>
             <FancyCounting
@@ -196,36 +197,39 @@ export default function AccountDoctor() {
             />
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Tổng tiền đã chi tiêu"}</p>
+            <p className="metric-label">{"Số bác sĩ đang hoạt động"}</p>
             <p className="metric-value">
               <FancyCounting
                 from={0}
-                to={doctors.reduce(
-                  (acc, d) => acc + Number(d.total_spent || 0),
-                  0
-                )}
-                duration={4}
-                format={(value) =>
-                  value.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })
+              to={
+                  doctors.length
+                    ? doctors.reduce((sum, d) => {
+                        return sum + (d.isActive ? 1 : 0);
+                      }, 0)
+                    : 0
                 }
+                duration={4}
               />
             </p>
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Khách hàng xác thực"}</p>
+            <p className="metric-label">
+              {"Số dịch vụ trung bình mỗi bác sĩ đảm nhận"}
+            </p>
             <p className="metric-value">
               <FancyCounting
                 from={0}
-                to={doctors.filter((d) => d.isVerified).length}
+                to={
+                  doctors.length
+                    ? doctors.reduce((sum, d) => sum + d.services.length, 0) /
+                    doctors.length
+                    : 0
+                }
                 duration={4}
               />
-              /{doctors.filter((d) => d.isVerified).length}
             </p>
           </Col>
-        </Row> */}
+        </Row>
       </Card>
 
       <Card>
@@ -282,10 +286,10 @@ export default function AccountDoctor() {
             dataSource={
               Array.isArray(filteredDoctors) && filteredDoctors.length > 0
                 ? filteredDoctors.map((doctor) => ({
-                    ...doctor,
-                    onUpdate: () => handleUpdate(doctor.id),
-                    onRemove: () => handleDelete(doctor.id),
-                  }))
+                  ...doctor,
+                  onUpdate: () => handleUpdate(doctor.id),
+                  onRemove: () => handleDelete(doctor.id),
+                }))
                 : []
             }
             scroll={{ x: "max-content" }}
