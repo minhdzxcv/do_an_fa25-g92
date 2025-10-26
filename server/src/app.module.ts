@@ -8,6 +8,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccountModule } from './modules/account/account.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ServiceModule } from './modules/service/service.module';
+import { CartModule } from './modules/cart/cart.module';
+import { AppointmentModule } from './modules/appointment/appointment.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { ServiceModule } from './modules/service/service.module';
     AccountModule,
     CategoryModule,
     ServiceModule,
+    CartModule,
+    AppointmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
