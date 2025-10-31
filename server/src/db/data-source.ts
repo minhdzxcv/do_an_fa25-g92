@@ -1,7 +1,5 @@
 import { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
-import * as dotenv from 'dotenv';
-dotenv.config();
 // import glob from 'fast-glob';
 
 // const entityPaths = glob.sync('src/entities/*.entity.{ts,js}');
@@ -11,7 +9,7 @@ export const dataSourceOptions: DataSourceOptions = {
   host: 'localhost',
   port: 3306,
   username: 'root',
-  password: process.env.PASSWORD_MYSQL || 'root',
+  password: 'root',
   database: 'gen_spa',
   entities: [__dirname + '/../entities/*.entity.{js,ts}'],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
