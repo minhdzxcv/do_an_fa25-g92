@@ -18,6 +18,13 @@ import ServicesComp from "@/pages/Services";
 import ServiceDetail from "@/pages/Services/ServiceDetail";
 import CartPage from "@/pages/Customer/Cart";
 import Booking from "@/pages/Customer/Bookings";
+import Profile from "@/pages/Customer/Profile";
+import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
+import CustomerOrders from "@/pages/Customer/Order";
+import SuccessPayment from "@/pages/Customer/Payment/success";
+import FailPayment from "@/pages/Customer/Payment/fail";
+import StaffDashboard from "@/pages/Staff/Dashboard";
+import OrderManagementStaff from "@/pages/Staff/OrderManagement";
 
 const router = createBrowserRouter([
   {
@@ -175,6 +182,81 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Booking />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.profile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <Profile />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorProfile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <DoctorPublicProfile />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.customerOrders,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <CustomerOrders />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.paymentSuccess,
+    element: <SuccessPayment />,
+  },
+
+  {
+    path: configRoutes.paymentFail,
+    element: <FailPayment />,
+  },
+
+  {
+    path: configRoutes.staffDashboard,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <StaffDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffOrders,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementStaff />,
+          },
+        ],
       },
     ],
   },

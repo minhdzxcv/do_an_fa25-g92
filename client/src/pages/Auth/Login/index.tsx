@@ -41,7 +41,7 @@ const LoginPage = () => {
           address?: string;
           image?: string;
           role?: string;
-          spaId?: string;
+          avatar?: string | null;
         };
         error?: { data?: { message?: string[] } };
       };
@@ -56,15 +56,17 @@ const LoginPage = () => {
           address: res.data.address || "",
           image: res.data.image || "",
           roles: res.data.role ? (res.data.role as RoleEnumType) : null,
-          spaId: res.data.spaId || null,
+          avatar: res.data.avatar || null,
         });
 
         if (res.data.role === RoleEnum.Admin) {
           navigate(configRoutes.adminDashboard, { replace: true });
         } else if (res.data.role === RoleEnum.Customer) {
           navigate(configRoutes.home);
+        } else if (res.data.role === RoleEnum.Staff) {
+          navigate(configRoutes.staffDashboard, { replace: true });
         } else {
-          navigate("/");
+          navigate(configRoutes.home);
         }
       } else if (res.error) {
         const message = res.error.data?.message;
