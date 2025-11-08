@@ -41,27 +41,134 @@ export class MailService implements OnModuleInit {
     to: string;
     text: string;
     appointment: {
-      customer: { name: string };
-      spa: { name: string; address: string };
+      customer: { full_name: string };
       startTime: Date;
-      service: { name: string };
+      services: {
+        name: string;
+        price: string;
+      }[];
       staff?: { name: string } | null;
+      address: string;
     };
   }) {
     await this.transporter.sendMail({
       from: this.configService.get<string>('EMAIL_USER'),
       to,
-      subject: `Xác nhận lịch hẹn tại ${appointment.spa.name}`,
+      subject: `Xác nhận lịch hẹn tại GenSpa`,
       template: 'appointment-confirmation',
       context: {
-        customerName: appointment.customer.name,
-        spaName: appointment.spa.name,
+        customerName: appointment.customer.full_name,
         startTime: appointment.startTime.toLocaleString(),
-        serviceName: appointment.service.name,
+        services: appointment.services,
         staffName: appointment.staff?.name || 'Đang cập nhật',
-        spaAddress: appointment.spa.address,
+        spaAddress: appointment.address,
       },
       text,
+    });
+  }
+
+  async confirmAppointmentDeposit({
+    to,
+    text,
+    appointment,
+  }: {
+    to: string;
+    text: string;
+    appointment: {
+      customer: { full_name: string };
+      startTime: Date;
+      services: {
+        name: string;
+        price: string;
+      }[];
+      staff?: { full_name: string } | null;
+      address: string;
+      depositAmount: string;
+    };
+  }) {
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('EMAIL_USER'),
+      to,
+      subject: `Xác nhận đã đặt cọc tại GenSpa`,
+      template: 'appointment-deposit-confirmation',
+      context: {
+        customerName: appointment.customer.full_name,
+        startTime: appointment.startTime.toLocaleString('vi-VN'),
+        services: appointment.services,
+        staffName: appointment.staff?.full_name || 'Đang cập nhật',
+        spaAddress: appointment.address,
+        depositAmount: appointment.depositAmount,
+      },
+      text,
+    });
+  }
+
+  async sendThankYouForUsingServiceEmail(data: {
+    to: string;
+    customerName: string;
+    services: {
+      name: string;
+      price: string;
+    }[];
+    usedDate: string;
+    specialistName?: string;
+    spaName: string;
+    spaHotline?: string;
+    feedbackUrl?: string;
+  }) {
+    await this.transporter.sendMail({
+      to: data.to,
+      subject: `Cảm ơn bạn đã sử dụng dịch vụ tại ${data.spaName}`,
+      template: 'appointment-completed',
+      context: {
+        customerName: data.customerName,
+        services: data.services,
+        usedDate: data.usedDate,
+        specialistName: data.specialistName || 'Đang cập nhật',
+        spaName: data.spaName,
+        spaHotline: data.spaHotline || '1900 1234',
+        feedbackUrl: data.feedbackUrl || 'https://vicompose.vn/feedback',
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendResetPasswordEmail(data: {
+    to: string;
+    user: { full_name?: string; email: string };
+    spaHotline?: string;
+    token: string;
+    resetUrl: string;
+  }) {
+    await this.transporter.sendMail({
+      to: data.user.email,
+      subject: 'Đặt lại mật khẩu - GenSpa',
+      template: 'forgot-password',
+      context: {
+        customerName: data.user.full_name || 'Khách hàng',
+        spaName: 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        resetUrl: `${data.resetUrl}`,
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendSuccessResetPasswordEmail(data: {
+    to: string;
+    user: { full_name?: string; email: string };
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      to: data.user.email,
+      subject: 'Đặt lại mật khẩu thành công - GenSpa',
+      template: 'forgot-password-success',
+      context: {
+        customerName: data.user.full_name || 'Khách hàng',
+        spaName: 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        year: new Date().getFullYear(),
+      },
     });
   }
 
