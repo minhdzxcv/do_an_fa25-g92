@@ -17,6 +17,22 @@ import AccountDoctor from "@/pages/Admin/AccountDoctor";
 import ServicesComp from "@/pages/Services";
 import ServiceDetail from "@/pages/Services/ServiceDetail";
 import CartPage from "@/pages/Customer/Cart";
+import Booking from "@/pages/Customer/Bookings";
+import Profile from "@/pages/Customer/Profile";
+import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
+import CustomerOrders from "@/pages/Customer/Order";
+import StaffDashboard from "@/pages/Staff/Dashboard";
+import OrderManagementStaff from "@/pages/Staff/OrderManagement";
+import OrderManagementDoctor from "@/pages/Doctor/OrderManagement";
+import DoctorDashboard from "@/pages/Doctor/Dashboard";
+import OrderManagementCasher from "@/pages/Casher/OrderManagement";
+import SuccessPaymentDeposited from "@/pages/Customer/Payment/Deposited/success";
+import FailPaymentDeposited from "@/pages/Customer/Payment/Deposited/fail";
+import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
+import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
+import Vouchers from "@/pages/Admin/Voucher";
+import Membership from "@/pages/Admin/Membership";
+import ForgotEmailPage from "@/pages/Auth/ForgotEmail";
 
 const router = createBrowserRouter([
   {
@@ -165,6 +181,187 @@ const router = createBrowserRouter([
         element: <CartPage />,
       },
     ],
+  },
+
+  {
+    path: configRoutes.bookings,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <Booking />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.profile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <Profile />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorProfile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <DoctorPublicProfile />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.customerOrders,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <CustomerOrders />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.paymentSuccessDeposit,
+    element: <SuccessPaymentDeposited />,
+  },
+
+  {
+    path: configRoutes.paymentFailDeposit,
+    element: <FailPaymentDeposited />,
+  },
+
+  {
+    path: configRoutes.paymentSuccessPaid,
+    element: <SuccessPaymentPaid />,
+  },
+
+  {
+    path: configRoutes.paymentFailPaid,
+    element: <FailPaymentPaid />,
+  },
+
+  {
+    path: configRoutes.staffDashboard,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <StaffDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffOrders,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementStaff />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorDashboard,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DoctorDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorOrderManagement,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementDoctor />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherOrderManagement,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Casher]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementCasher />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminVouchers,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <Vouchers />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminMemberships,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <Membership />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.forgotEmail,
+    element: <ForgotEmailPage />,
   },
 ]);
 

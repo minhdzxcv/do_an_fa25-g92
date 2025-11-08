@@ -5,11 +5,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { StaffData } from "./type";
+import type { StaffDataTable } from "./type";
 import AvatarTable from "@/components/AvatarTable";
 import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
 
-export const staffColumn = (): ColumnsType<StaffData> => [
+export const staffColumn = (): ColumnsType<StaffDataTable> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -60,6 +60,21 @@ export const staffColumn = (): ColumnsType<StaffData> => [
   {
     title: "Số điện thoại",
     dataIndex: "phone",
+  },
+  {
+    title: "Chức vụ",
+    dataIndex: "role",
+    render: (text) => {
+      return (
+        <Tag color="cyan">
+          {text.name === "admin"
+            ? "Quản trị viên"
+            : text.name === "staff"
+            ? "Nhân viên"
+            : "Thu ngân"}
+        </Tag>
+      );
+    },
   },
   {
     title: "Trạng thái",

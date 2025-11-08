@@ -19,6 +19,21 @@ import { CreateServiceDto, UpdateServiceDto } from './dto/service.dto';
 export class ServiceController {
   constructor(private servicesService: ServiceService) {}
 
+  @Get('public')
+  getPublicServices() {
+    return this.servicesService.findPublicServices();
+  }
+
+  @Get('public/:id')
+  getPublicService(@Param('id') id: string) {
+    return this.servicesService.findOnePublicService(id);
+  }
+
+  @Get('public/doctor/:id')
+  getPublicServiceByDoctor(@Param('id') doctorId: string) {
+    return this.servicesService.findServicesByDoctor(doctorId);
+  }
+
   @Post('')
   @UseInterceptors(FilesInterceptor('images', 10, { storage: memoryStorage() }))
   @ApiConsumes('multipart/form-data')
@@ -27,12 +42,24 @@ export class ServiceController {
     @Body() body: any,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    let doctorsIds: string[] = [];
+    if (typeof body.doctorsIds === 'string') {
+      try {
+        doctorsIds = JSON.parse(body.doctorsIds);
+      } catch {
+        doctorsIds = [];
+      }
+    } else if (Array.isArray(body.doctorsIds)) {
+      doctorsIds = body.doctorsIds;
+    }
+
     const dto: CreateServiceDto = {
       name: body.name,
       price: Number(body.price),
       description: body.description ?? '',
       categoryId: body.categoryId,
       isActive: body.isActive === 'true',
+      doctorsIds: doctorsIds,
     };
 
     return this.servicesService.createService(dto, files);
@@ -57,6 +84,17 @@ export class ServiceController {
     @Body() body: any,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    let doctorsIds: string[] = [];
+    if (typeof body.doctorsIds === 'string') {
+      try {
+        doctorsIds = JSON.parse(body.doctorsIds);
+      } catch {
+        doctorsIds = [];
+      }
+    } else if (Array.isArray(body.doctorsIds)) {
+      doctorsIds = body.doctorsIds;
+    }
+
     const dto: UpdateServiceDto = {
       name: body.name,
       price: Number(body.price),
@@ -64,6 +102,7 @@ export class ServiceController {
       categoryId: body.categoryId,
       isActive: body.isActive === 'true' || body.isActive === true,
       id: id,
+      doctorsIds: doctorsIds,
     };
 
     let deletedImages: string[] = [];
@@ -79,5 +118,10 @@ export class ServiceController {
   @Delete(':id')
   removeService(@Param('id') id: string) {
     return this.servicesService.deleteService(id);
+  }
+
+  @Get('doctor/:serviceId')
+  findDoctorsByService(@Param('serviceId') serviceId: string) {
+    return this.servicesService.findDoctorsByService(serviceId);
   }
 }

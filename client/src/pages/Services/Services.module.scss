@@ -21,25 +21,231 @@
 }
 
 .filterWrapper {
-    margin-bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px 0 60px;
+    gap: 20px;
 
-    :global(.ant-segmented) {
+    // ---- CATEGORY SEGMENT ----
+    .categoryFilter {
         background: #fff;
-        padding: 6px;
-        border-radius: 40px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    }
-
-    :global(.ant-segmented-item) {
-        font-weight: 500;
-        font-size: 1rem;
+        border-radius: 50px;
+        padding: 8px 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+        overflow-x: auto;
+        max-width: 100%;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
         transition: all 0.3s ease;
 
-        &:hover {
-            color: #1677ff;
+        .ant-segmented-item {
+            padding: 10px 22px;
+            font-weight: 500;
+            color: #666;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+
+            &:hover {
+                background-color: rgba(101, 177, 117, 0.1);
+            }
+        }
+
+        .ant-segmented-item-selected {
+            background: linear-gradient(135deg, #8cd6a0, #65b175);
+            color: #fff;
+            box-shadow: 0 3px 8px rgba(101, 177, 117, 0.3);
+        }
+    }
+
+    // ---- ADVANCED FILTERS ----
+    .advancedFilters {
+        margin-top: 10px;
+        background: #ffffff;
+        padding: 24px 28px;
+        border-radius: 24px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        max-width: 920px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        transition: 0.3s ease all;
+        border: 1px solid #f3f3f3;
+
+        .searchInput {
+            width: 280px;
+            border-radius: 12px;
+            border-color: #eee;
+            height: 42px;
+            transition: all 0.3s ease;
+
+            &:focus-within {
+                border-color: #65b175;
+                box-shadow: 0 0 0 2px rgba(101, 177, 117, 0.2);
+            }
+
+            input {
+                border-radius: 12px;
+            }
+        }
+
+        .priceFilter {
+            width: 280px;
+
+            span {
+                display: block;
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 6px;
+                font-weight: 500;
+            }
+
+            .ant-slider {
+                .ant-slider-track {
+                    background-color: #65b175;
+                }
+
+                .ant-slider-handle::after {
+                    box-shadow: 0 0 0 4px rgba(101, 177, 117, 0.2);
+                }
+            }
+        }
+
+        .resetBtn {
+            border-radius: 12px;
+            font-weight: 500;
+            color: #65b175;
+            border-color: #65b175;
+            height: 42px;
+            transition: all 0.3s ease;
+            padding: 0 20px;
+
+            &:hover {
+                background: #65b175;
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(101, 177, 117, 0.3);
+            }
         }
     }
 }
+
+.filterWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px 0 60px;
+    gap: 20px;
+
+    .categoryFilter {
+        background: #fff;
+        border-radius: 50px;
+        padding: 8px 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+        overflow-x: auto;
+        max-width: 100%;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+        transition: all 0.3s ease;
+
+        .ant-segmented-item {
+            padding: 10px 22px;
+            font-weight: 500;
+            color: #666;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+
+            &:hover {
+                background-color: rgba(101, 177, 117, 0.1);
+            }
+        }
+
+        .ant-segmented-item-selected {
+            background: linear-gradient(135deg, #8cd6a0, #65b175);
+            color: #fff;
+            box-shadow: 0 3px 8px rgba(101, 177, 117, 0.3);
+        }
+    }
+
+    .advancedFilters {
+        margin-top: 10px;
+        background: #ffffff;
+        padding: 24px 28px;
+        border-radius: 24px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        max-width: 920px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        transition: 0.3s ease all;
+        border: 1px solid #f3f3f3;
+
+        .searchInput {
+            width: 280px;
+            border-radius: 12px;
+            border-color: #eee;
+            height: 42px;
+            transition: all 0.3s ease;
+
+            &:focus-within {
+                border-color: #65b175;
+                box-shadow: 0 0 0 2px rgba(101, 177, 117, 0.2);
+            }
+
+            input {
+                border-radius: 12px;
+            }
+        }
+
+        .priceFilter {
+            width: 280px;
+
+            span {
+                display: block;
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 6px;
+                font-weight: 500;
+            }
+
+            .ant-slider {
+                .ant-slider-track {
+                    background-color: #65b175;
+                }
+
+                .ant-slider-handle::after {
+                    box-shadow: 0 0 0 4px rgba(101, 177, 117, 0.2);
+                }
+            }
+        }
+
+        .resetBtn {
+            border-radius: 12px;
+            font-weight: 500;
+            color: #65b175;
+            border-color: #65b175;
+            height: 42px;
+            transition: all 0.3s ease;
+            padding: 0 20px;
+
+            &:hover {
+                background: #65b175;
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(101, 177, 117, 0.3);
+            }
+        }
+    }
+}
+
 
 .card {
     border-radius: 20px !important;
@@ -117,4 +323,130 @@
             color: #fff !important;
         }
     }
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+
+    .addToCartIcon {
+        font-size: 16px;
+        color: #65b175;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 5px;
+        border-radius: 10px;
+        border: 2px solid #65b175;
+
+
+        &:hover {
+            transform: scale(1.2);
+            color: #4f945d;
+            border-color: #4f945d;
+        }
+    }
+}
+
+.doctorItem {
+    transition: background-color 0.3s;
+    border-radius: 8px;
+    padding: 12px 12px;
+    margin: 10px 10px;
+
+    &:hover {
+        background-color: #f5f5f5;
+    }
+}
+
+.selectedDoctor {
+    background-color: #aed2ed !important;
+    // border: 1px solid #1677ff;
+
+    padding: 12px 12px !important;
+}
+
+.doctorWrapper {
+    position: relative;
+}
+
+.doctorItem {
+    border-radius: 10px;
+    margin: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    padding: 12px;
+
+    &:hover {
+        background-color: #f9f9f9;
+        transform: translateY(-2px);
+    }
+
+    &:hover+.doctorHoverCard {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -10px);
+    }
+}
+
+.doctorHoverCard {
+    position: absolute;
+    top: 0;
+    left: 105%;
+    width: 300px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    z-index: 20;
+    pointer-events: none;
+}
+
+.doctorHoverContent {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.doctorHoverInfo {
+    h4 {
+        margin: 0 0 6px;
+        font-size: 1.05rem;
+        color: #2f3e46;
+    }
+
+    p {
+        font-size: 0.85rem;
+        margin: 3px 0;
+        color: #6b7c74;
+
+        &.bio {
+            margin-top: 8px;
+            font-style: italic;
+            color: #8a9b95;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    }
+}
+
+.doctorHoverCard::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 10px solid white;
+    filter: drop-shadow(-1px 2px 2px rgba(0, 0, 0, 0.05));
 }

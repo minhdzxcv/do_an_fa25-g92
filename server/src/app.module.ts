@@ -8,6 +8,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccountModule } from './modules/account/account.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ServiceModule } from './modules/service/service.module';
+import { CartModule } from './modules/cart/cart.module';
+import { AppointmentModule } from './modules/appointment/appointment.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
+import { MembershipModule } from './modules/membership/membership.module';
 
 @Module({
   imports: [
@@ -17,6 +22,11 @@ import { ServiceModule } from './modules/service/service.module';
     AccountModule,
     CategoryModule,
     ServiceModule,
+    CartModule,
+    AppointmentModule,
+    PaymentModule,
+    VoucherModule,
+    MembershipModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -30,9 +30,16 @@ export type ServiceData = {
   description: string;
   categoryId: string;
   categoryName: string;
-  spaName: string;
   isActive: boolean;
   category: CategoryData;
+  doctors: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    specialization: string;
+    biography: string | null;
+    experience_years: number | null;
+  }[];
 };
 
 export type CreateService = {
@@ -217,6 +224,13 @@ export const serviceApi = createApi({
         method: "Get",
       }),
     }),
+
+    getPublicServiceByDoctor: build.mutation<ServiceData[], string>({
+      query: (doctorId) => ({
+        url: `/service/public/doctor/${doctorId}`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -235,4 +249,5 @@ export const {
 
   useGetPublicServicesMutation,
   useGetPublicServiceByIdQuery,
+  useGetPublicServiceByDoctorMutation,
 } = serviceApi;

@@ -5,10 +5,20 @@ export const configRoutes = {
   register: "/register",
   services: "/services",
   serviceDetail: "/services/:id",
+  forgotEmail: "/forgot-email",
+  forgotPassword: "/forgot-password",
 
   profile: "/profile",
   cart: "/cart",
   bookings: "/bookings",
+  doctorProfile: "/services/doctor/:id",
+  customerOrders: "/customer/orders",
+  customerPayments: "/customer/payments",
+
+  paymentSuccessPaid: "/casher/payments/success-paid",
+  paymentFailPaid: "/casher/payments/fail-paid",
+  paymentSuccessDeposit: "/customer/payments/success-deposit",
+  paymentFailDeposit: "/customer/payments/fail-deposit",
 
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",
@@ -17,6 +27,16 @@ export const configRoutes = {
   adminDoctors: "/admin/doctors",
   adminServices: "/admin/services",
   adminVouchers: "/admin/vouchers",
+  adminMemberships: "/admin/memberships",
+
+  staffDashboard: "/staff/dashboard",
+  staffOrders: "/staff/orders",
+
+  doctorDashboard: "/doctor/dashboard",
+  doctorOrderManagement: "/doctor/orders",
+
+  // casherDashboard: "/casher/dashboard",
+  casherOrderManagement: "/casher/orders",
 };
 
 export const configError = {

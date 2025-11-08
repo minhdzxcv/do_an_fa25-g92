@@ -1,15 +1,7 @@
-export type StaffData = {
-  id: string;
-  full_name: string;
-  gender: string;
-  avatar?: string;
-  phone?: string;
-  email: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+import type { StaffData } from "@/services/account";
 
+export type StaffDataTable = StaffData & {
   onUpdate: () => void;
-  onRemove: () => void;
+  onRemove: () => Promise<void>;
   // onDisable: () => void;
 };

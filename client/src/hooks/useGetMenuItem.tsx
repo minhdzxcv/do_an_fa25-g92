@@ -1,4 +1,5 @@
 import {
+  MdCardMembership,
   MdCategory,
   // MdCardMembership,
   // MdCategory,
@@ -66,6 +67,63 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       link: configRoutes.adminVouchers,
       icon: <FaTags className="ml-3" />,
       activeLink: [configRoutes.adminVouchers],
+    },
+    {
+      name: "Hạng thành viên",
+      link: configRoutes.adminMemberships,
+      icon: <MdCardMembership className="ml-3" />,
+      activeLink: [configRoutes.adminMemberships],
+    },
+  ];
+
+  const StaffSidebar = (): SiderItem[] => [
+    {
+      name: "Dashboard",
+      link: configRoutes.staffDashboard,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.staffDashboard],
+    },
+    {
+      name: "Đơn hàng",
+      link: configRoutes.staffOrders,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.staffOrders],
+    },
+    // {
+    //   name: "Khách hàng",
+    //   link: configRoutes.staffCustomers,
+    //   icon: <RiUser3Fill className="ml-3" />,
+    //   activeLink: [configRoutes.staffCustomers],
+    // },
+    // {
+    //   name: "Bác sĩ",
+    //   link: configRoutes.staffDoctors,
+    //   icon: <FaUserDoctor className="ml-3" />,
+    //   activeLink: [configRoutes.staffDoctors],
+    // },
+  ];
+
+  const DoctorSidebar = (): SiderItem[] => [
+    {
+      name: "Dashboard",
+      link: configRoutes.doctorDashboard,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.doctorDashboard],
+    },
+    {
+      name: "Đơn hàng",
+      link: configRoutes.doctorOrderManagement,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.doctorOrderManagement],
+    },
+  ];
+
+  const CashierSidebar = (): SiderItem[] => [
+    {
+      name: "Quản lý đơn hàng",
+      link: configRoutes.casherOrderManagement,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.casherOrderManagement],
     },
   ];
 
@@ -138,10 +196,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
   switch (role) {
     case RoleEnum.Admin:
       return AdminSidebar();
-    // case RoleEnum.SpaAdmin:
-    //   return SpaAdminSidebar();
-    // case RoleEnum.Staff:
-    //   return SpaStaffSidebar();
+    case RoleEnum.Staff:
+      return StaffSidebar();
+    case RoleEnum.Doctor:
+      return DoctorSidebar();
+    case RoleEnum.Casher:
+      return CashierSidebar();
     default:
       return [];
   }

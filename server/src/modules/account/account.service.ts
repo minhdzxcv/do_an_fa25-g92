@@ -311,6 +311,9 @@ export class AccountService {
       services: doctor.services.map((s) => ({
         id: s.id,
         name: s.name,
+        images: s.images,
+        description: s.description,
+        price: s.price,
       })),
     };
 
@@ -366,5 +369,22 @@ export class AccountService {
     const doctor = await this.findOneDoctor(id);
     doctor.isActive = !doctor.isActive;
     return this.doctorRepository.save(doctor);
+  }
+
+  async getPublicDoctorProfile(id: string): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+
+    const doctorEdited = {
+      ...omit(doctor, ['password', 'refreshToken']),
+      services: doctor.services.map((s) => ({
+        id: s.id,
+        name: s.name,
+        images: s.images,
+        description: s.description,
+        price: s.price,
+      })),
+    };
+
+    return doctorEdited;
   }
 }

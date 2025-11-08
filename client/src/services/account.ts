@@ -140,6 +140,14 @@ export type DoctorDatas = {
     | {
         id: string;
         name: string;
+        images:
+          | {
+              alt: string;
+              url: string;
+            }[]
+          | [];
+        description: string;
+        price: number;
       }[]
     | null;
 };
@@ -150,6 +158,7 @@ export type DoctorData = {
   gender: string;
   email: string;
   phone: string;
+  avatar: string | null;
   biography: string;
   specialization: string;
   refreshToken: string;
@@ -162,6 +171,14 @@ export type DoctorData = {
     | {
         id: string;
         name: string;
+        images:
+          | {
+              alt: string;
+              url: string;
+            }[]
+          | [];
+        description: string;
+        price: number;
       }[]
     | null;
 };
@@ -325,6 +342,13 @@ export const accountApi = createApi({
         method: "Delete",
       }),
     }),
+
+    getPublicDoctorProfile: build.mutation<DoctorData, string>({
+      query: (id) => ({
+        url: `/account/doctors/public-profile/${id}`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -349,4 +373,5 @@ export const {
   useGetDoctorByIdQuery,
   useUpdateDoctorMutation,
   useDeleteDoctorMutation,
+  useGetPublicDoctorProfileMutation,
 } = accountApi;

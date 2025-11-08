@@ -18,6 +18,7 @@ import FancySegment from "@/components/FancySegment";
 import { PiExportFill } from "react-icons/pi";
 import FancyCounting from "@/components/FancyCounting";
 import FancyBreadcrumb from "@/components/FancyBreadcrumb";
+import type { StaffDataTable } from "./_components/type";
 
 export default function AccountStaff() {
   //   const navigate = useNavigate();
@@ -30,8 +31,8 @@ export default function AccountStaff() {
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
-  const [staffs, setStaffs] = useState<StaffData[]>([]);
-  const [allStaffs, setAllStaffs] = useState<StaffData[]>([]);
+  const [staffs, setStaffs] = useState<StaffDataTable[]>([]);
+  const [allStaffs, setAllStaffs] = useState<StaffDataTable[]>([]);
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
@@ -180,7 +181,7 @@ export default function AccountStaff() {
     <>
       <Row className="mx-2 my-2">
         <Col>
-          <h4>
+          <h4 className="cus-text-primary">
             <strong>{"Tài khoản hệ thống"}</strong> <br />
           </h4>
         </Col>

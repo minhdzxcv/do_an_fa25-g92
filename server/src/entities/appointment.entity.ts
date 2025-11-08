@@ -14,6 +14,8 @@ import { Doctor } from './doctor.entity';
 import { AppointmentDetail } from './appointmentDetails.entity';
 import { Voucher } from './voucher.entity';
 import { AppointmentHistory } from './appointmentHistory.entity';
+import { Internal } from './internal.entity';
+import { AppointmentStatus } from './enums/appointment-status';
 
 @Entity()
 export class Appointment {
@@ -34,15 +36,22 @@ export class Appointment {
   @Column({ nullable: true })
   doctorId?: string;
 
+  @ManyToOne(() => Internal, { nullable: true, eager: true })
+  @JoinColumn({ name: 'staffId' })
+  staff?: Internal;
+
+  @Column({ nullable: true })
+  staffId?: string;
+
   @Column({ type: 'timestamp' })
   appointment_date: Date;
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
-    default: 'pending',
+    enum: AppointmentStatus,
+    default: AppointmentStatus.Pending,
   })
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: AppointmentStatus;
 
   @OneToMany(() => AppointmentDetail, (detail) => detail.appointment, {
     cascade: true,
@@ -71,6 +80,9 @@ export class Appointment {
   @Column({ nullable: true })
   cancelReason?: string;
 
+  @Column({ nullable: true })
+  rejectionReason?: string;
+
   @Column({ type: 'timestamp' })
   startTime: Date;
 
@@ -82,4 +94,19 @@ export class Appointment {
 
   @OneToMany(() => AppointmentHistory, (history) => history.appointment)
   histories: AppointmentHistory[];
+
+  @Column({ nullable: true })
+  orderCode?: number;
+
+  @Column({ default: 'online' })
+  appointmentType?: 'online' | 'offline';
+
+  @Column({ nullable: true })
+  paymentMethod?: 'cash' | 'qr' | 'card';
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  totalAmount: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  depositAmount: number;
 }
