@@ -5,8 +5,8 @@ export const configRoutes = {
   register: "/register",
   services: "/services",
   serviceDetail: "/services/:id",
-  forgotEmail: "/forgot-email",
   forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
 
   profile: "/profile",
   cart: "/cart",
@@ -29,8 +29,8 @@ export const configRoutes = {
   adminVouchers: "/admin/vouchers",
   adminMemberships: "/admin/memberships",
 
-  staffDashboard: "/staff/dashboard",
   staffOrders: "/staff/orders",
+  staffFeedback: "/staff/feedback",
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
