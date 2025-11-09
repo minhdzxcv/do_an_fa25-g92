@@ -49,6 +49,34 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     ),
   },
   {
+    title: "Dịch vụ",
+    dataIndex: "services",
+    render: (_, record) => (
+      <Space>
+        {record.details.map((service, index) => (
+          <Tag color="green" key={index} style={{ marginBottom: 4 }}>
+            {service.service.name}{" "}
+          </Tag>
+        ))}
+      </Space>
+    ),
+  },
+  {
+    title: "Tổng tiền",
+    dataIndex: "totalAmount",
+    align: "right",
+    render: (_, record) => {
+      return (
+        <span>
+          {Number(record.totalAmount).toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
+        </span>
+      );
+    },
+  },
+  {
     title: "Bác sĩ",
     dataIndex: "doctor",
     render: (_, record) => {
@@ -106,6 +134,15 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
         </Tag>
       );
     },
+  },
+  {
+    title: "Lý do hủy",
+    dataIndex: "cancelReason",
+    align: "center",
+    width: 200,
+    render: (_, record) => (
+      <span>{record.cancelReason ? record.cancelReason : "-"}</span>
+    ),
   },
   {
     title: "",
