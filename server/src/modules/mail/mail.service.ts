@@ -1,3 +1,4 @@
+import { Voucher } from '@/entities/voucher.entity';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
@@ -149,6 +150,52 @@ export class MailService implements OnModuleInit {
         spaName: 'GenSpa',
         spaHotline: data.spaHotline || '1900 1234',
         resetUrl: `${data.resetUrl}`,
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendVerifyEmail(data: {
+    to: string;
+    customerName: string;
+    verifyUrl: string;
+    spaName?: string;
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('EMAIL_USER'),
+      to: data.to,
+      subject: `Xác thực email - ${data.spaName || 'GenSpa'}`,
+      template: 'verify-email',
+      context: {
+        customerName: data.customerName,
+        verifyUrl: data.verifyUrl,
+        spaName: data.spaName || 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendVoucherEmail(data: {
+    to: string;
+    customerName: string;
+    voucher: Voucher;
+    deadUseDate?: string;
+    spaName?: string;
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('EMAIL_USER'),
+      to: data.to,
+      subject: `Bạn vừa nhận được voucher mới - ${data.spaName || 'GenSpa'}`,
+      template: 'new-voucher',
+      context: {
+        customerName: data.customerName,
+        usedDate: data.deadUseDate || 'Đang cập nhật',
+        voucher: data.voucher,
+        spaName: data.spaName || 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
         year: new Date().getFullYear(),
       },
     });

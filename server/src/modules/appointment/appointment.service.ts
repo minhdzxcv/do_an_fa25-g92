@@ -16,6 +16,10 @@ import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
 import { Internal } from '@/entities/internal.entity';
+import { Cart } from '@/entities/cart.entity';
+import { CartDetail } from '@/entities/cartDetails.entity';
+import { Voucher } from '@/entities/voucher.entity';
+import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -35,6 +39,18 @@ export class AppointmentService {
 
     @InjectRepository(Internal)
     private readonly internalRepo: Repository<Internal>,
+
+    @InjectRepository(Cart)
+    private readonly cartRepo: Repository<Cart>,
+
+    @InjectRepository(CartDetail)
+    private readonly cartDetailRepo: Repository<CartDetail>,
+
+    @InjectRepository(Voucher)
+    private readonly voucherRepo: Repository<Voucher>,
+
+    @InjectRepository(CustomerVoucher)
+    private readonly customerVoucherRepo: Repository<CustomerVoucher>,
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
@@ -122,18 +138,71 @@ export class AppointmentService {
       throw new BadRequestException('Một hoặc nhiều dịch vụ không hợp lệ');
     }
 
+    const voucher = await this.voucherRepo.findOne({
+      where: { id: dto.voucherId },
+    });
+
+    if (voucher) {
+      const now = new Date();
+      const validTo = voucher.validTo ? new Date(voucher.validTo) : null;
+      if (validTo && validTo < now) {
+        throw new BadRequestException('Voucher đã hết hạn');
+      } else {
+        const customerVoucher = await this.customerVoucherRepo.findOne({
+          where: {
+            customerId: dto.customerId,
+            voucherId: dto.voucherId,
+            isUsed: false,
+          },
+        });
+
+        if (!customerVoucher) {
+          throw new BadRequestException('Voucher không hợp lệ cho khách hàng');
+        }
+
+        await this.customerVoucherRepo.update(customerVoucher.id, {
+          isUsed: true,
+          usedAt: new Date(),
+        });
+      }
+    }
+
     const appointment = this.appointmentRepo.create({
       ...dto,
+
       status: AppointmentStatus.Pending,
       details: dto.details.map((d) => ({
         ...d,
       })),
 
-      totalAmount: services.reduce((sum, service) => sum + service.price, 0),
+      // totalAmount: services.reduce((sum, service) => sum + service.price, 0),
+      totalAmount: dto.totalAmount,
     });
 
-    const saved = await this.appointmentRepo.save(appointment);
+    const cart = await this.cartRepo.findOne({
+      where: { customerId: dto.customerId },
+      relations: ['details'],
+    });
 
+    if (cart && cart.details?.length) {
+      const deleteConditions = dto.details.map((d) => ({
+        cartId: cart.id,
+        serviceId: d.serviceId,
+        doctorId: dto.doctorId,
+      }));
+
+      await this.cartDetailRepo.delete(deleteConditions);
+
+      const remaining = await this.cartDetailRepo.count({
+        where: { cartId: cart.id },
+      });
+
+      if (remaining === 0) {
+        await this.cartRepo.delete(cart.id);
+      }
+    }
+
+    const saved = await this.appointmentRepo.save(appointment);
     return this.findOne(saved.id);
   }
 
@@ -172,7 +241,6 @@ export class AppointmentService {
         .where('appointmentId = :id', { id })
         .execute();
 
-      let totalAmount = 0;
       if (dto.details && dto.details.length) {
         const newDetails: AppointmentDetail[] = [];
         for (const d of dto.details) {
@@ -186,7 +254,6 @@ export class AppointmentService {
           }
 
           const price = d.price ?? service.price ?? 0;
-          totalAmount += price;
 
           const detail = detailRepo.create({
             ...d,
@@ -203,7 +270,7 @@ export class AppointmentService {
       Object.assign(managedAppointment, {
         ...dto,
         details: undefined,
-        totalAmount: totalAmount,
+        totalAmount: dto.totalAmount,
       });
 
       return await appointmentRepo.save(managedAppointment);
