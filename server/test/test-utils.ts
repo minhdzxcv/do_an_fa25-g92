@@ -68,7 +68,7 @@ export function createMockCloudinary() {
 
 /**
  * Mock bcrypt functions
- */
+ */ 
 export function mockBcrypt() {
     jest.mock('bcrypt', () => ({
         compare: jest.fn(),

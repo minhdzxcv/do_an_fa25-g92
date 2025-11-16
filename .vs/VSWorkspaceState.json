@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\server",
+    "\\server\\src",
+    "\\server\\src\\modules",
+    "\\server\\src\\modules\\account",
+    "\\server\\src\\modules\\auth",
+    "\\server\\src\\modules\\category",
+    "\\server\\src\\modules\\service",
+    "\\server\\test"
+  ],
+  "PreviewInSolutionExplorer": false
+}

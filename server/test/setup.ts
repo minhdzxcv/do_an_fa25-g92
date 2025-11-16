@@ -9,12 +9,12 @@ jest.mock('bcrypt', () => ({
 
 // Mock environment variables
 process.env.JWT_SECRET = '1234567890abcdef1234567890abcdef';
-process.env.EXPIRE_TIME_ACCESS = '1h';
+process.env.EXPIRE_TIME_ACCESS = '1d';
 process.env.EXPIRE_TIME_REFRESH = '7d';
 process.env.PASSWORD_MYSQL = 'root';
 process.env.CLOUDINARY_CLOUD_NAME = 'dlf04wlnw';
-process.env.CLOUDINARY_API_KEY = '991518719233217';
-process.env.CLOUDINARY_API_SECRET = '8cRvGScWMP0w0rQBQbrBqy8hUHo';
+process.env.CLOUDINARY_API_KEY = '642566623875426';
+process.env.CLOUDINARY_API_SECRET = 'YNzKyffjFzthKIKO9faKq6Savjc';
 
 // Global test setup
 beforeAll(async () => {

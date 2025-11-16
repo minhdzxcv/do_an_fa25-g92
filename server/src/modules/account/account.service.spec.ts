@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { NotFoundException } from '@nestjs/common';
 
 import { AccountService } from './account.service';
 import { Customer } from '@/entities/customer.entity';
@@ -14,7 +15,8 @@ import { CreateCustomerDto } from './dto/customer.dto';
 import { CreateInternalDto } from './dto/internal.dto';
 import { CreateDoctorDto } from './dto/doctor.dto';
 import { RoleEnum } from '@/common/types/role.enum';
-import { Gender } from '@/entities/customer.entity';
+import { Gender } from '../../entities/enums/gender.enum';
+
 
 describe('AccountService', () => {
     let service: AccountService;
@@ -78,6 +80,7 @@ describe('AccountService', () => {
             save: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
+            softRemove: jest.fn(), 
             createQueryBuilder: jest.fn(() => ({
                 leftJoinAndSelect: jest.fn().mockReturnThis(),
                 where: jest.fn().mockReturnThis(),
@@ -417,6 +420,142 @@ describe('AccountService', () => {
                 expect(roleRepository.find).toHaveBeenCalled();
             });
         });
+
+        describe('findOneInternal', () => {
+            it('should return an internal user by id', async () => {
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+
+                const result = await service.findOneInternal('internal-1');
+
+                expect(result).toEqual(mockInternal);
+                expect(internalRepository.findOne).toHaveBeenCalledWith({
+                    where: { id: 'internal-1' },
+                    relations: ['role'],
+                });
+            });
+
+            it('should throw NotFoundException when internal not found', async () => {
+                internalRepository.findOne.mockResolvedValue(null);
+
+                await expect(service.findOneInternal('nonexistent-id')).rejects.toThrow(
+                    NotFoundException,
+                );
+            });
+        });
+
+        describe('updateInternal', () => {
+            it('should update internal user successfully', async () => {
+                const updateDto: any = {
+                    full_name: 'Updated Staff',
+                    phone: '0987654321',
+                };
+
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+                internalRepository.save.mockResolvedValue({
+                    ...mockInternal,
+                    ...updateDto,
+                });
+
+                const result = await service.updateInternal('internal-1', updateDto);
+
+                expect(result).toEqual({
+                    ...mockInternal,
+                    ...updateDto,
+                });
+                expect(internalRepository.save).toHaveBeenCalled();
+            });
+
+            it('should throw error when email already exists', async () => {
+                const updateDto: any = {
+                    email: 'existing@test.com',
+                };
+
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+                customerRepository.findOne.mockResolvedValue(mockCustomer);
+
+                await expect(service.updateInternal('internal-1', updateDto)).rejects.toThrow();
+            });
+        });
+
+        describe('toggleInternalActive', () => {
+            it('should toggle internal active status', async () => {
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+                internalRepository.save.mockResolvedValue({
+                    ...mockInternal,
+                    isActive: false,
+                });
+
+                const result = await service.toggleInternalActive('internal-1');
+
+                expect(result.isActive).toBe(false);
+                expect(internalRepository.save).toHaveBeenCalled();
+            });
+        });
+
+        describe('removeInternal', () => {
+            it('should soft delete internal user successfully', async () => {
+                const staffRole = { id: 2, name: 'staff', description: 'Staff member' };
+                const staffToDelete = {
+                    ...mockInternal,
+                    role: staffRole,
+                };
+
+                internalRepository.findOne.mockResolvedValue(staffToDelete);
+                internalRepository.softRemove.mockResolvedValue({});
+
+                const result = await service.removeInternal('internal-1');
+
+                expect(result).toHaveProperty('message');
+                expect(internalRepository.softRemove).toHaveBeenCalled();
+            });
+
+            it('should throw error when trying to delete admin', async () => {
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+
+                await expect(service.removeInternal('internal-1')).rejects.toThrow();
+            });
+
+            it('should throw NotFoundException when internal not found', async () => {
+                internalRepository.findOne.mockResolvedValue(null);
+
+                await expect(service.removeInternal('nonexistent-id')).rejects.toThrow(
+                    NotFoundException,
+                );
+            });
+        });
+
+        describe('updateInternalPassword', () => {
+            it('should update internal password successfully', async () => {
+                const updatePasswordDto = {
+                    id: 'internal-1',
+                    newPassword: 'newPassword',
+                };
+
+                internalRepository.findOne.mockResolvedValue(mockInternal);
+                internalRepository.save.mockResolvedValue({
+                    ...mockInternal,
+                    password: 'newHashedPassword',
+                });
+
+                const result = await service.updateInternalPassword(updatePasswordDto);
+
+                expect(result).toHaveProperty('password');
+                expect(internalRepository.save).toHaveBeenCalled();
+            });
+
+            it('should throw NotFoundException when internal not found', async () => {
+                const updatePasswordDto = {
+                    id: 'nonexistent-id',
+                    newPassword: 'newPassword',
+                };
+
+                internalRepository.findOne.mockResolvedValue(null);
+
+                await expect(
+                    service.updateInternalPassword(updatePasswordDto),
+                ).rejects.toThrow(NotFoundException);
+            });
+        });
     });
 
     describe('Doctor Management', () => {
@@ -619,6 +758,40 @@ describe('AccountService', () => {
                 doctorRepository.findOne.mockResolvedValue(null);
 
                 await expect(service.updateDoctorPassword(updatePasswordDto)).rejects.toThrow();
+            });
+        });
+
+        describe('getPublicDoctorProfile', () => {
+            it('should return public doctor profile without sensitive data', async () => {
+                const doctorWithServices = {
+                    ...mockDoctor,
+                    services: [
+                        {
+                            id: 'service-1',
+                            name: 'Service 1',
+                            images: [],
+                            description: 'Test',
+                            price: 100000,
+                        },
+                    ],
+                };
+
+                doctorRepository.findOne.mockResolvedValue(doctorWithServices);
+
+                const result = await service.getPublicDoctorProfile('doctor-1');
+
+                expect(result).not.toHaveProperty('password');
+                expect(result).not.toHaveProperty('refreshToken');
+                expect(result).toHaveProperty('services');
+                expect(doctorRepository.findOne).toHaveBeenCalled();
+            });
+
+            it('should throw NotFoundException when doctor not found', async () => {
+                doctorRepository.findOne.mockResolvedValue(null);
+
+                await expect(service.getPublicDoctorProfile('nonexistent-id')).rejects.toThrow(
+                    NotFoundException,
+                );
             });
         });
     });

@@ -1,0 +1,545 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\SEP490\\do_an_fa25-g92\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\package-lock.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\package-lock.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\package.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\package.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\tsconfig.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.build.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\tsconfig.build.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\test\\test-utils.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\test\\test-utils.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\test\\setup.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\test\\setup.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\test\\jest-e2e.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\test\\jest-e2e.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\jest.config.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\jest.config.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\nest-cli.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\nest-cli.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\auth\\auth.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\account\\account.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\service\\service.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\service\\service.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\category\\category.service.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\auth\\auth.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\account\\account.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\category\\category.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\service\\service.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\service\\service.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\category\\category.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\account\\account.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\roles.guard.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\auth\\roles.guard.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\auth\\auth.service.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\auth\\auth.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\account\\account.controller.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.module.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\modules\\account\\account.module.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\test\\app.e2e-spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\test\\app.e2e-spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\main.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\main.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\SEP490\\do_an_fa25-g92\\server\\src\\app.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\src\\app.controller.spec.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 11,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:4:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{fbcae063-e2c0-4ab1-a516-996ea3dafb72}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:7:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:8:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:9:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:2:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "package-lock.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\package-lock.json",
+              "RelativeDocumentMoniker": "server\\package-lock.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\package-lock.json",
+              "RelativeToolTip": "server\\package-lock.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-02T15:38:08.185Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "test-utils.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\test-utils.ts",
+              "RelativeDocumentMoniker": "server\\test\\test-utils.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\test-utils.ts",
+              "RelativeToolTip": "server\\test\\test-utils.ts",
+              "ViewState": "AgIAAIsAAAAAAAAAAAAAABAAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:11:28.479Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "jest.config.js",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\jest.config.js",
+              "RelativeDocumentMoniker": "server\\jest.config.js",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\jest.config.js",
+              "RelativeToolTip": "server\\jest.config.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-10-25T15:09:41.904Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "jest-e2e.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\jest-e2e.json",
+              "RelativeDocumentMoniker": "server\\test\\jest-e2e.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\jest-e2e.json",
+              "RelativeToolTip": "server\\test\\jest-e2e.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-25T15:10:13.365Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "setup.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\setup.ts",
+              "RelativeDocumentMoniker": "server\\test\\setup.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\setup.ts",
+              "RelativeToolTip": "server\\test\\setup.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:10:55.057Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "tsconfig.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.json",
+              "RelativeDocumentMoniker": "server\\tsconfig.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.json",
+              "RelativeToolTip": "server\\tsconfig.json",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-27T02:24:17.743Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "tsconfig.build.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.build.json",
+              "RelativeDocumentMoniker": "server\\tsconfig.build.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\tsconfig.build.json",
+              "RelativeToolTip": "server\\tsconfig.build.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-27T02:24:25.63Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "package.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\package.json",
+              "RelativeDocumentMoniker": "server\\package.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\package.json",
+              "RelativeToolTip": "server\\package.json",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAACAAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-25T15:16:38.756Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "auth.service.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\auth\\auth.service.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\auth\\auth.service.spec.ts",
+              "ViewState": "AgIAAJIBAAAAAAAAAAAAAJwBAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:13:08.31Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "account.service.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\account\\account.service.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\account\\account.service.spec.ts",
+              "ViewState": "AgIAAHQBAAAAAAAAAAAAAAIBAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:11:51.892Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "docker-compose.yml",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\docker-compose.yml",
+              "RelativeDocumentMoniker": "server\\docker-compose.yml",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\docker-compose.yml",
+              "RelativeToolTip": "server\\docker-compose.yml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2025-11-02T14:05:12.65Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "nest-cli.json",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\nest-cli.json",
+              "RelativeDocumentMoniker": "server\\nest-cli.json",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\nest-cli.json",
+              "RelativeToolTip": "server\\nest-cli.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-02T14:05:15.794Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "service.controller.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\service\\service.controller.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\service\\service.controller.spec.ts",
+              "ViewState": "AgIAACEAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:14:38.53Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "service.service.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\service\\service.service.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\service\\service.service.spec.ts",
+              "ViewState": "AgIAAJ8BAAAAAAAAAAAkwKQBAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:14:51.776Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "category.service.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\category\\category.service.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\category\\category.service.spec.ts",
+              "ViewState": "AgIAABcAAAAAAAAAAAAkwCUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:14:25.698Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "auth.controller.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\auth\\auth.controller.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\auth\\auth.controller.spec.ts",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAkwB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:13:36.716Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "account.controller.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\account\\account.controller.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\account\\account.controller.spec.ts",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAkwBcAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:12:40.886Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "category.service.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\category\\category.service.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.service.ts",
+              "RelativeToolTip": "server\\src\\modules\\category\\category.service.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T03:17:17.098Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "service.service.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\service\\service.service.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.service.ts",
+              "RelativeToolTip": "server\\src\\modules\\service\\service.service.ts",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAQwGYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T03:15:24.569Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "service.controller.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\service\\service.controller.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\service\\service.controller.ts",
+              "RelativeToolTip": "server\\src\\modules\\service\\service.controller.ts",
+              "ViewState": "AgIAABwAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T03:15:29.799Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "category.controller.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.controller.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\category\\category.controller.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\category\\category.controller.spec.ts",
+              "RelativeToolTip": "server\\src\\modules\\category\\category.controller.spec.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:14:05.855Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "account.service.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\account\\account.service.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.service.ts",
+              "RelativeToolTip": "server\\src\\modules\\account\\account.service.ts",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAkwIgAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T02:27:59.319Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "roles.guard.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\roles.guard.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\auth\\roles.guard.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\roles.guard.ts",
+              "RelativeToolTip": "server\\src\\modules\\auth\\roles.guard.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T02:33:17.73Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "auth.service.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\auth\\auth.service.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.service.ts",
+              "RelativeToolTip": "server\\src\\modules\\auth\\auth.service.ts",
+              "ViewState": "AgIAAGoAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T02:33:09.32Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "auth.controller.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\auth\\auth.controller.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\auth\\auth.controller.ts",
+              "RelativeToolTip": "server\\src\\modules\\auth\\auth.controller.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:24:19.083Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "account.controller.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\account\\account.controller.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.controller.ts",
+              "RelativeToolTip": "server\\src\\modules\\account\\account.controller.ts",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAACkAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:45:34.458Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "account.module.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.module.ts",
+              "RelativeDocumentMoniker": "server\\src\\modules\\account\\account.module.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\modules\\account\\account.module.ts",
+              "RelativeToolTip": "server\\src\\modules\\account\\account.module.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-27T02:17:08.57Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "app.e2e-spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\app.e2e-spec.ts",
+              "RelativeDocumentMoniker": "server\\test\\app.e2e-spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\test\\app.e2e-spec.ts",
+              "RelativeToolTip": "server\\test\\app.e2e-spec.ts",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:10:24.276Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "main.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\main.ts",
+              "RelativeDocumentMoniker": "server\\src\\main.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\main.ts",
+              "RelativeToolTip": "server\\src\\main.ts",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:24:31.77Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "app.controller.spec.ts",
+              "DocumentMoniker": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\app.controller.spec.ts",
+              "RelativeDocumentMoniker": "server\\src\\app.controller.spec.ts",
+              "ToolTip": "D:\\SEP490\\do_an_fa25-g92\\server\\src\\app.controller.spec.ts",
+              "RelativeToolTip": "server\\src\\app.controller.spec.ts",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-10-25T15:16:11.45Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

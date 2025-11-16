@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { Service } from '@/entities/service.entity';
 import { Category } from '@/entities/category.entity';
+import { Doctor } from '@/entities/doctor.entity';
 import { CreateServiceDto, UpdateServiceDto } from './dto/service.dto';
 
 // Mock cloudinary
@@ -20,6 +21,7 @@ describe('ServiceService', () => {
     let service: ServiceService;
     let serviceRepository: any;
     let categoryRepository: any;
+    let doctorRepository: any;
 
     const mockCategory = {
         id: 'category-1',
@@ -79,6 +81,13 @@ describe('ServiceService', () => {
             save: jest.fn(),
         };
 
+        const mockDoctorRepository = {
+            find: jest.fn(),
+            findOne: jest.fn(),
+            findByIds: jest.fn(),
+            createQueryBuilder: jest.fn(),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ServiceService,
@@ -90,12 +99,17 @@ describe('ServiceService', () => {
                     provide: getRepositoryToken(Category),
                     useValue: mockCategoryRepository,
                 },
+                {
+                    provide: getRepositoryToken(Doctor),
+                    useValue: mockDoctorRepository,
+                },
             ],
         }).compile();
 
         service = module.get<ServiceService>(ServiceService);
         serviceRepository = module.get(getRepositoryToken(Service));
         categoryRepository = module.get(getRepositoryToken(Category));
+        doctorRepository = module.get(getRepositoryToken(Doctor));
     });
 
     afterEach(() => {
@@ -415,6 +429,142 @@ describe('ServiceService', () => {
 
             await expect(service.uploadImagesToCloudinary(mockFiles)).rejects.toThrow(
                 'Lỗi khi tải lên hình ảnh',
+            );
+        });
+    });
+
+    describe('findPublicServices', () => {
+        it('should return all active public services', async () => {
+            const services = [mockService];
+            serviceRepository.find.mockResolvedValue(services);
+
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([]),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+            const result = await service.findPublicServices();
+
+            expect(Array.isArray(result)).toBe(true);
+            expect(serviceRepository.find).toHaveBeenCalled();
+        });
+
+        it('should return empty array when no active services found', async () => {
+            serviceRepository.find.mockResolvedValue([]);
+
+            const result = await service.findPublicServices();
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('findOnePublicService', () => {
+        it('should return a public service by id', async () => {
+            serviceRepository.findOne.mockResolvedValue(mockService);
+
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([]),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+            const result = await service.findOnePublicService('service-1');
+
+            expect(result).toHaveProperty('id', 'service-1');
+            expect(serviceRepository.findOne).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when service not found', async () => {
+            serviceRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.findOnePublicService('nonexistent-id')).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+    });
+
+    describe('findDoctorsByService', () => {
+        it('should return doctors for a service', async () => {
+            const mockDoctors = [
+                {
+                    id: 'doctor-1',
+                    full_name: 'Doctor 1',
+                    isActive: true,
+                },
+            ];
+
+            serviceRepository.findOne.mockResolvedValue(mockService);
+
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue(mockDoctors),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+            const result = await service.findDoctorsByService('service-1');
+
+            expect(result).toEqual(mockDoctors);
+            expect(doctorRepository.createQueryBuilder).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when no doctors found', async () => {
+            serviceRepository.findOne.mockResolvedValue(mockService);
+
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([]),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+            await expect(service.findDoctorsByService('service-1')).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+    });
+
+    describe('findServicesByDoctor', () => {
+        it('should return services for a doctor', async () => {
+            const mockDoctor = {
+                id: 'doctor-1',
+                full_name: 'Doctor 1',
+                services: [mockService],
+            };
+
+            doctorRepository.findOne.mockResolvedValue(mockDoctor);
+
+            const result = await service.findServicesByDoctor('doctor-1');
+
+            expect(result).toEqual([mockService]);
+            expect(doctorRepository.findOne).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when doctor not found', async () => {
+            doctorRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.findServicesByDoctor('nonexistent-id')).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it('should throw NotFoundException when doctor has no services', async () => {
+            const mockDoctor = {
+                id: 'doctor-1',
+                services: [],
+            };
+
+            doctorRepository.findOne.mockResolvedValue(mockDoctor);
+
+            await expect(service.findServicesByDoctor('doctor-1')).rejects.toThrow(
+                NotFoundException,
             );
         });
     });
