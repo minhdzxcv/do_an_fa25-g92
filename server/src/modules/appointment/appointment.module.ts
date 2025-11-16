@@ -19,6 +19,9 @@ import { Cart } from '@/entities/cart.entity';
 import { CartDetail } from '@/entities/cartDetails.entity';
 import { Voucher } from '@/entities/voucher.entity';
 import { CustomerVoucher } from '@/entities/customerVoucher.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
+import { AppointmentCronReminderService } from './appointment.cron';
 
 @Module({
   imports: [
@@ -38,6 +41,8 @@ import { CustomerVoucher } from '@/entities/customerVoucher.entity';
       CartDetail,
       Voucher,
       CustomerVoucher,
+      Invoice,
+      InvoiceDetail,
     ]),
     JwtModule.register({
       global: true,
@@ -47,6 +52,6 @@ import { CustomerVoucher } from '@/entities/customerVoucher.entity';
     MailModule,
   ],
   controllers: [AppointmentController],
-  providers: [AppointmentService],
+  providers: [AppointmentCronReminderService, AppointmentService],
 })
 export class AppointmentModule {}
