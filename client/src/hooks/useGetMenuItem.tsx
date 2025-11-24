@@ -16,6 +16,7 @@ import { configRoutes } from "@/constants/route";
 import { RiUser3Fill } from "react-icons/ri";
 import { FaFileInvoiceDollar, FaTags, FaUserDoctor } from "react-icons/fa6";
 import { GiFlowerEmblem } from "react-icons/gi";
+import { BiAnalyse } from "react-icons/bi";
 // import { IoChatboxEllipses } from "react-icons/io5";
 
 export type SiderItem = {
@@ -76,8 +77,20 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       activeLink: [configRoutes.adminMemberships],
     },
     {
+      name: "Phân tích dữ liệu",
+      link: configRoutes.adminDataAnalysis,
+      icon: <BiAnalyse className="ml-3" />,
+      activeLink: [configRoutes.adminDataAnalysis],
+    },
+    {
       name: "Hoá đơn",
       link: configRoutes.casherInvoice,
+      icon: <FaFileInvoiceDollar className="ml-3" />,
+      activeLink: [configRoutes.casherInvoice],
+    },
+    {
+      name: "Tài chính",
+      link: configRoutes.casherStats,
       icon: <FaFileInvoiceDollar className="ml-3" />,
       activeLink: [configRoutes.casherInvoice],
     },

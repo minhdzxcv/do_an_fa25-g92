@@ -18,7 +18,7 @@ const ContactSection = () => {
           <div className={cx("info")}>
             <div className={cx("infoItem")}>
               <i className="fas fa-map-marker-alt"></i>
-              <span>123 Tố Hữu, Đống Đa, Hà Nội</span>
+              <span>123 Đường ABC, Quận 1, TP. Hồ Chí Minh</span>
             </div>
             <div className={cx("infoItem")}>
               <i className="fas fa-phone-alt"></i>
