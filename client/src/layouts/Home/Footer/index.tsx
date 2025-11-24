@@ -54,7 +54,7 @@ const Footer = () => {
             <div className="col-md-6 col-lg-3">
               <h4>Địa chỉ</h4>
               <p>
-                123 GenSpa Street, Quận 1, TP.HCM
+                123 GenSpa Street, Q123 Tố Hữu, Đống Đa, Hà Nội
                 <br />
                 Mở cửa: 9:00 – 21:00
               </p>
@@ -67,6 +67,7 @@ const Footer = () => {
                 <a href="#" className={cx("social-link")}>
                   <i className="fab fa-facebook-f"></i>
                 </a>
+                
                 <a href="#" className={cx("social-link")}>
                   <i className="fab fa-instagram"></i>
                 </a>
