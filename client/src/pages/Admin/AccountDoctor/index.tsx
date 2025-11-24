@@ -197,11 +197,11 @@ export default function AccountDoctor() {
             />
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Số bác sĩ đang hoạt động"}</p>
+            <p className="metric-label">{"Số năm kinh nghiệm trung bình"}</p>
             <p className="metric-value">
               <FancyCounting
                 from={0}
-              to={
+                to={
                   doctors.length
                     ? doctors.reduce((sum, d) => {
                         return sum + (d.isActive ? 1 : 0);
@@ -222,7 +222,7 @@ export default function AccountDoctor() {
                 to={
                   doctors.length
                     ? doctors.reduce((sum, d) => sum + d.services.length, 0) /
-                    doctors.length
+                      doctors.length
                     : 0
                 }
                 duration={4}
@@ -286,10 +286,10 @@ export default function AccountDoctor() {
             dataSource={
               Array.isArray(filteredDoctors) && filteredDoctors.length > 0
                 ? filteredDoctors.map((doctor) => ({
-                  ...doctor,
-                  onUpdate: () => handleUpdate(doctor.id),
-                  onRemove: () => handleDelete(doctor.id),
-                }))
+                    ...doctor,
+                    onUpdate: () => handleUpdate(doctor.id),
+                    onRemove: () => handleDelete(doctor.id),
+                  }))
                 : []
             }
             scroll={{ x: "max-content" }}

@@ -31,6 +31,7 @@ import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
 import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
 import Vouchers from "@/pages/Admin/Voucher";
 import Membership from "@/pages/Admin/Membership";
+// import RecommendationPage from "@/pages/Admin/Recommendation";
 import ForgotPasswordPage from "@/pages/Auth/ForgotPassword";
 import ForbiddenPage from "@/pages/Error/ForbiddenPage";
 import NotFoundPage from "@/pages/Error/NotFound";
@@ -43,6 +44,10 @@ import InvoiceCasher from "@/pages/Casher/Invoice";
 import VoucherCustomer from "@/pages/Customer/Voucher";
 import DoctorList from "@/pages/Services/DoctorList";
 import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
+import DataAnalysisDashboard from "@/pages/Admin/DataAnalysisDashboard";
+import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
+import NotificationCustomer from "@/pages/Customer/Notification";
+import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +63,11 @@ const router = createBrowserRouter([
   {
     path: configRoutes.login,
     element: <LoginPage />,
+    // children: [{ index: true, element: <LoginPage /> }],
+  },
+  {
+    path: configRoutes.verified,
+    element: <VerifyEmailPage />,
     // children: [{ index: true, element: <LoginPage /> }],
   },
   {
@@ -236,6 +246,16 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: configRoutes.customerNotifications,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <NotificationCustomer />,
+      },
+    ],
+  },
 
   {
     path: configRoutes.paymentSuccessDeposit,
@@ -354,6 +374,22 @@ const router = createBrowserRouter([
   },
 
   {
+    path: configRoutes.adminDataAnalysis,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DataAnalysisDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
     path: configRoutes.staffFeedback,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Staff, RoleEnum.Admin]} />,
     children: [
@@ -437,6 +473,23 @@ const router = createBrowserRouter([
     ],
   },
 
+  {
+    path: configRoutes.casherStats,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <PaymentStatsPage />,
+          },
+        ],
+      },
+    ],
+  },
   {
     path: configRoutes.customerVouchers,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Customer]} />,
