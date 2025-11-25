@@ -6,6 +6,9 @@ import { join } from 'path';
 
 @Injectable()
 export class MailService implements OnModuleInit {
+  remindUpcomingAppointment(arg0: { to: string; text: string; appointment: { customer: { full_name: string; }; startTime: Date; services: { name: string; price: string; }[]; staff: { name: string; } | null; }; }) {
+    throw new Error('Method not implemented.');
+  }
   private transporter: nodemailer.Transporter;
 
   constructor(private configService: ConfigService) {}
