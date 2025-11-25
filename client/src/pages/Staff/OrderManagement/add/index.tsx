@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
 import {
   Form,
-  Input,
   Button,
   DatePicker,
-  TimePicker,
   Select,
   message,
   Space,
   Modal,
+  Input,
 } from "antd";
 import dayjs from "dayjs";
-import { useCreateAppointmentMutation } from "@/services/appointment";
+import {
+  useCreateAppointmentMutation,
+  useGetAppointmentsBookedByDoctorMutation,
+} from "@/services/appointment";
 import styles from "./CreateAppointment.module.scss";
 import {
   useGetCustomersMutation,
@@ -21,6 +23,8 @@ import {
 } from "@/services/account";
 import { showError } from "@/libs/toast";
 import { useAuthStore } from "@/hooks/UseAuth";
+import FancyButton from "@/components/FancyButton";
+import AddCustomer from "@/pages/Admin/AccountCustomer/add";
 
 type Props = {
   isOpen: boolean;
@@ -28,124 +32,167 @@ type Props = {
   onReload?: () => void;
 };
 
+const { Option } = Select;
+
 const CreateAppointmentModal: React.FC<Props> = ({
   isOpen,
   onClose,
   onReload,
 }) => {
   const [form] = Form.useForm();
-  const [createAppointment, { isLoading }] = useCreateAppointmentMutation();
+  const [createAppointment, { isLoading: isCreating }] =
+    useCreateAppointmentMutation();
 
   const [getAllPublicDoctors] = useGetDoctorsMutation();
-  const [doctors, setDoctors] = useState<DoctorDatas[]>([]);
-  const [doctorSelected, setDoctorSelected] = useState<string>("");
-
   const [getServiceByDoctor] = useGetPublicDoctorProfileMutation();
-  const [services, setServices] = useState<
-    {
-      id: string;
-      name: string;
-      description: string;
-      price: number;
-      images:
-        | {
-            alt: string;
-            url: string;
-          }[]
-        | [];
-    }[]
-  >([]);
-
   const [getAllCustomers] = useGetCustomersMutation();
-  const [customers, setCustomers] = useState<
-    {
-      id: string;
-      full_name: string;
-      email: string;
-      phone: string;
-    }[]
+
+  const [
+    triggerGetBooked,
+    { data: bookedAppointments = [], isFetching: loadingBooked },
+  ] = useGetAppointmentsBookedByDoctorMutation();
+
+  const [allDoctors, setAllDoctors] = useState<DoctorDatas[]>([]);
+  const [allCustomers, setAllCustomers] = useState<any[]>([]);
+  const [services, setServices] = useState<
+    { id: string; name: string; price: number }[]
   >([]);
 
-  const handleGetDoctors = async () => {
-    try {
-      const response = await getAllPublicDoctors().unwrap();
-      setDoctors(response.filter((a) => a.isActive));
-    } catch {
-      showError("Không thể tải danh sách bác sĩ");
-    }
-  };
+  const [filteredDoctors, setFilteredDoctors] = useState<DoctorDatas[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
+  const [filteredServices, setFilteredServices] = useState<any[]>([]);
 
-  const handleGetServicesByDoctor = async (doctorId: string) => {
-    try {
-      const response = await getServiceByDoctor(doctorId).unwrap();
-
-      if (!response.services) {
-        setServices([]);
-        return;
-      }
-
-      setServices(
-        response.services.map((s) => ({
-          id: s.id,
-          name: s.name,
-          description: s.description,
-          price: s.price,
-          images: s.images || [],
-        }))
-      );
-    } catch {
-      showError("Không thể tải dịch vụ của bác sĩ này");
-    }
-  };
-
-  const handleGetCustomers = async () => {
-    try {
-      const response = await getAllCustomers().unwrap();
-      setCustomers(response);
-    } catch {
-      showError("Không thể tải danh sách khách hàng");
-    }
-  };
-
-  useEffect(() => {
-    if (doctorSelected) {
-      handleGetServicesByDoctor(doctorSelected);
-    }
-  }, [doctorSelected]);
-
-  useEffect(() => {
-    if (isOpen) {
-      handleGetDoctors();
-      handleGetCustomers();
-    }
-  }, [isOpen]);
+  const [doctorId, setDoctorId] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(null);
+  const [isAddingCustomer, setIsAddingCustomer] = useState(false);
 
   const { auth } = useAuthStore();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const timeSlots = [
+    { label: "09:00 - 10:00", value: "09:00-10:00" },
+    { label: "10:00 - 11:00", value: "10:00-11:00" },
+    { label: "11:00 - 12:00", value: "11:00-12:00" },
+    { label: "12:00 - 13:00", value: "12:00-13:00" },
+    { label: "13:00 - 14:00", value: "13:00-14:00" },
+    { label: "14:00 - 15:00", value: "14:00-15:00" },
+    { label: "15:00 - 16:00", value: "15:00-16:00" },
+    { label: "16:00 - 17:00", value: "16:00-17:00" },
+  ];
+
+  const getBookedSlots = () => {
+    if (!Array.isArray(bookedAppointments) || !selectedDate) return [];
+
+    const selectedDateStr = selectedDate.format("YYYY-MM-DD");
+
+    return bookedAppointments
+      .filter((appt: any) => {
+        const apptDate = dayjs(appt.startTime).format("YYYY-MM-DD");
+        const status = (appt.status || "").toLowerCase();
+
+        return (
+          apptDate === selectedDateStr &&
+          !["cancelled", "rejected", "completed"].includes(status)
+        );
+      })
+      .map((appt: any) => {
+        const start = dayjs(appt.startTime).format("HH:mm");
+        const end = dayjs(appt.endTime).format("HH:mm");
+        return `${start}-${end}`;
+      });
+  };
+
+  const bookedSlots = getBookedSlots();
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadData = async () => {
+      try {
+        const [doctorsRes, customersRes] = await Promise.all([
+          getAllPublicDoctors({}).unwrap(),
+          getAllCustomers({}).unwrap(),
+        ]);
+
+        const activeDoctors = doctorsRes.filter((d: DoctorDatas) => d.isActive);
+        setAllDoctors(activeDoctors);
+        setFilteredDoctors(activeDoctors);
+        setAllCustomers(customersRes);
+        setFilteredCustomers(customersRes);
+      } catch (err) {
+        showError("Không thể tải dữ liệu");
+      }
+    };
+
+    loadData();
+
+    form.resetFields();
+    setDoctorId("");
+    setSelectedDate(null);
+    setServices([]);
+    setFilteredServices([]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!doctorId) {
+      setServices([]);
+      setFilteredServices([]);
+      return;
+    }
+
+    const loadServices = async () => {
+      try {
+        const res = await getServiceByDoctor(doctorId).unwrap();
+        const list = (res.services || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          price: s.price || 0,
+        }));
+        setServices(list);
+        setFilteredServices(list);
+      } catch {
+        showError("Không tải được dịch vụ");
+      }
+    };
+
+    loadServices();
+  }, [doctorId]);
+
+  useEffect(() => {
+    if (doctorId && selectedDate) {
+      triggerGetBooked({
+        doctorId,
+        date: selectedDate.format("YYYY-MM-DD"),
+      });
+      form.setFieldsValue({ time: undefined });
+    } else {
+      form.setFieldsValue({ time: undefined });
+    }
+  }, [doctorId, selectedDate, triggerGetBooked, form]);
+
   const handleSubmit = async (values: any) => {
     try {
-      const appointmentDate = values.date;
-      const startTime = values.time[0];
-      const endTime = values.time[1];
+      const date = values.date as dayjs.Dayjs;
+      const [startStr, endStr] = (values.time as string).split("-");
 
-      const startDateTime = appointmentDate
-        .hour(startTime.hour())
-        .minute(startTime.minute())
-        .second(0);
+      const startTime = date
+        .hour(+startStr.split(":")[0])
+        .minute(+startStr.split(":")[1])
+        .second(0)
+        .millisecond(0);
 
-      const endDateTime = appointmentDate
-        .hour(endTime.hour())
-        .minute(endTime.minute())
-        .second(0);
+      const endTime = date
+        .hour(+endStr.split(":")[0])
+        .minute(+endStr.split(":")[1])
+        .second(0)
+        .millisecond(0);
 
       const payload = {
         customerId: values.customerId,
         doctorId: values.doctorId,
         staffId: auth.accountId,
-        appointment_date: values.date.format("YYYY-MM-DD"),
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        appointment_date: date.format("YYYY-MM-DD"),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
         details: values.services.map((id: string) => ({
           serviceId: id,
           price: services.find((s) => s.id === id)?.price || 0,
@@ -156,12 +203,10 @@ const CreateAppointmentModal: React.FC<Props> = ({
 
       await createAppointment(payload).unwrap();
       message.success("Tạo lịch hẹn thành công!");
-      form.resetFields();
       onClose();
       onReload?.();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      message.error(err?.data?.message || "Không thể tạo lịch hẹn");
+      message.error(err?.data?.message || "Tạo lịch hẹn thất bại");
     }
   };
 
@@ -171,119 +216,183 @@ const CreateAppointmentModal: React.FC<Props> = ({
       open={isOpen}
       onCancel={onClose}
       footer={null}
+      width={720}
       centered
-      width={600}
+      destroyOnClose
     >
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handleSubmit}
-        className={styles.form}
-      >
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        {/* Khách hàng */}
         <Form.Item
-          label="Chọn khách hàng"
+          label="Khách hàng"
           name="customerId"
-          rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
+          rules={[{ required: true, message: "-- Chọn khách hàng --" }]}
         >
           <Select
-            placeholder="Chọn khách hàng"
-            options={customers.map((customer) => ({
-              label: customer.full_name,
-              value: customer.id,
-            }))}
-          />
+            showSearch
+            placeholder="Tìm tên, email, SĐT..."
+            filterOption={false}
+            onSearch={(val) => {
+              const search = val.toLowerCase();
+              setFilteredCustomers(
+                allCustomers.filter((c) =>
+                  [c.full_name, c.email, c.phone].some((f) =>
+                    f?.toString().toLowerCase().includes(search)
+                  )
+                )
+              );
+            }}
+            notFoundContent="Không tìm thấy"
+          >
+            {filteredCustomers.map((c) => (
+              <Option key={c.id} value={c.id} label={c.full_name}>
+                <div>
+                  <strong>{c.full_name}-{c.phone || "Chưa có SĐT"} • {c.email}</strong>
+                  
+                </div>
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
 
+        <Space className="mb-4">
+          <FancyButton
+            label="Thêm khách hàng mới"
+            onClick={() => setIsAddingCustomer(true)}
+          />
+          <AddCustomer
+            isOpen={isAddingCustomer}
+            onClose={() => setIsAddingCustomer(false)}
+            onReload={async () => {
+              const res = await getAllCustomers({}).unwrap();
+              setAllCustomers(res);
+              setFilteredCustomers(res);
+            }}
+          />
+        </Space>
+
+        {/* Bác sĩ */}
         <Form.Item
-          label="Chọn bác sĩ"
+          label="Bác sĩ"
           name="doctorId"
-          rules={[{ required: true, message: "Vui lòng chọn bác sĩ" }]}
+          rules={[{ required: true, message: "Chọn bác sĩ" }]}
         >
           <Select
-            placeholder="Chọn bác sĩ"
-            options={doctors.map((doctor) => ({
-              label: doctor.full_name,
-              value: doctor.id,
-            }))}
-            onChange={(value) => setDoctorSelected(value)}
-            value={doctorSelected}
-          />
+            showSearch
+            placeholder="Tìm tên hoặc chuyên môn..."
+            filterOption={false}
+            onSearch={(val) => {
+              const search = val.toLowerCase();
+              setFilteredDoctors(
+                allDoctors.filter((d) =>
+                  [d.full_name, d.specialty].some((f) =>
+                    f?.toString().toLowerCase().includes(search)
+                  )
+                )
+              );
+            }}
+            onChange={(val) => {
+              setDoctorId(val as string);
+              form.setFieldsValue({ services: [], time: undefined });
+              setSelectedDate(null);
+            }}
+          >
+            {filteredDoctors.map((d) => (
+              <Option key={d.id} value={d.id} label={d.full_name}>
+                <strong>{d.full_name}</strong>
+                {d.specialty && (
+                  <span style={{ color: "#1890ff", marginLeft: 8 }}>
+                    ({d.specialty})
+                  </span>
+                )}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
 
+        {/* Dịch vụ */}
         <Form.Item
           label="Dịch vụ"
           name="services"
-          rules={[
-            { required: true, message: "Vui lòng chọn ít nhất 1 dịch vụ" },
-          ]}
+          rules={[{ required: true, message: "Chọn ít nhất 1 dịch vụ" }]}
         >
           <Select
             mode="multiple"
-            placeholder="Chọn dịch vụ"
-            options={services.map((service) => ({
-              label: `${service.name} - ${service.price.toLocaleString()} VND`,
-              value: service.id,
-            }))}
-          />
+            disabled={!doctorId}
+            placeholder={doctorId ? "Chọn dịch vụ" : "Chọn bác sĩ trước"}
+            showSearch
+            filterOption={false}
+            onSearch={(val) => {
+              setFilteredServices(
+                services.filter((s) =>
+                  s.name.toLowerCase().includes(val.toLowerCase())
+                )
+              );
+            }}
+          >
+            {filteredServices.map((s) => (
+              <Option key={s.id} value={s.id}>
+                {s.name} - <strong>{s.price.toLocaleString()}₫</strong>
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Ngày hẹn"
-          name="date"
-          rules={[{ required: true, message: "Vui lòng chọn ngày hợp lệ" }]}
-        >
+        {/* Ngày */}
+        <Form.Item label="Ngày hẹn" name="date" rules={[{ required: true }]}>
           <DatePicker
             style={{ width: "100%" }}
-            disabledDate={(current) => {
-              return current && current < dayjs().startOf("day");
+            disabledDate={(d) => d.isBefore(dayjs().startOf("day"))}
+            onChange={(date) => {
+              setSelectedDate(date);
+              form.setFieldsValue({ time: undefined }); // reset giờ
             }}
           />
         </Form.Item>
 
+        {/* Giờ - đã fix reset */}
         <Form.Item
-          label="Giờ hẹn"
+          label="Khung giờ"
           name="time"
-          rules={[
-            { required: true, message: "Vui lòng chọn giờ từ 09:00 đến 17:00" },
-          ]}
+          rules={[{ required: true, message: "Chọn khung giờ" }]}
         >
-          <TimePicker.RangePicker
-            format="HH:mm"
-            style={{ width: "100%" }}
-            minuteStep={15}
-            disabledTime={() => {
-              const disabledHours = Array.from(
-                { length: 24 },
-                (_, i) => i
-              ).filter((h) => h < 9 || h > 16);
-              return {
-                disabledHours: () => disabledHours,
-                disabledMinutes: () => [],
-                disabledSeconds: () => [],
-              };
-            }}
-            onChange={(times) => {
-              if (times && times[0]) {
-                const start = times[0];
-                const end = start.clone().add(1, "hour");
-                const endHour = end.hour() > 17 ? 17 : end.hour();
-                const endMinute = end.hour() > 17 ? 0 : end.minute();
-                const finalEnd = end.clone().hour(endHour).minute(endMinute);
-                form.setFieldsValue({ time: [start, finalEnd] });
-              }
-            }}
-          />
+          <Select
+            placeholder="Chọn khung giờ"
+            loading={loadingBooked}
+            disabled={!doctorId || !selectedDate}
+          >
+            {timeSlots.map((slot) => {
+              const isBooked = bookedSlots.includes(slot.value);
+              return (
+                <Option key={slot.value} value={slot.value} disabled={isBooked}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    <span>{slot.label}</span>
+                    {isBooked && (
+                      <span style={{ color: "#ff4d4f", fontWeight: 500 }}>
+                        (Đã đặt)
+                      </span>
+                    )}
+                  </div>
+                </Option>
+              );
+            })}
+          </Select>
         </Form.Item>
 
         <Form.Item label="Ghi chú" name="note">
-          <Input.TextArea rows={3} placeholder="Nhập ghi chú (nếu có)" />
+          <Input.TextArea rows={3} />
         </Form.Item>
 
         <Form.Item className={styles.actions}>
           <Space>
-            <Button onClick={onClose}>Huỷ</Button>
-            <Button type="primary" htmlType="submit" loading={isLoading}>
-              Xác nhận
+            <Button onClick={onClose}>Hủy</Button>
+            <Button type="primary" htmlType="submit" loading={isCreating}>
+              Tạo lịch hẹn
             </Button>
           </Space>
         </Form.Item>
