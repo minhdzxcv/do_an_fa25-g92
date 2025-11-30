@@ -1,7 +1,8 @@
 import { axiosBaseQuery } from "@/libs/axios/axiosBase";
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = import.meta.env.VITE_PUBLIC_API || "";
+// Default to VITE_PUBLIC_API if provided, otherwise use localhost:3001 for local development
+const baseUrl = import.meta.env.VITE_PUBLIC_API || "http://localhost:3001";
 
 export type CategoryData = {
   id: string;
@@ -40,6 +41,43 @@ export type ServiceData = {
     biography: string | null;
     experience_years: number | null;
   }[];
+};
+
+export type PublicService = {
+  id: string;
+  name: string;
+  price: number;
+  images:
+    | {
+        alt: string;
+        url: string;
+      }[]
+    | [];
+  description: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+  };
+  doctors: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    specialization: string;
+    biography: string;
+    experience_years: string;
+  }[];
+  feedbacks: {
+    rating: number;
+    comment: string;
+    customer: {
+      id: string;
+      full_name: string;
+      avatar: string | null;
+    };
+    createdAt: string;
+  }[];
+  feedbacksCount: number;
 };
 
 export type CreateService = {
@@ -121,6 +159,25 @@ export type InvoiceData = {
   }[];
   customerName: string | null;
   spaName: string | null;
+};
+
+export type DoctorListProps = {
+  id: string;
+  avatar: string | null;
+  full_name: string;
+  gender: string;
+  email: string;
+  phone: string;
+  password: string;
+  refreshToken: string;
+  biography: string | null;
+  specialization: string;
+  experience_years: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  isActive: boolean;
+  isVerified: boolean;
 };
 
 export const serviceApi = createApi({
@@ -211,23 +268,30 @@ export const serviceApi = createApi({
       }),
     }),
 
-    getPublicServices: build.mutation<ServiceData[], void>({
+    getPublicServices: build.mutation<PublicService[], void>({
       query: () => ({
         url: `/service/public`,
         method: "Get",
       }),
     }),
 
-    getPublicServiceById: build.query<ServiceData, string>({
+    getPublicServiceById: build.query<PublicService, string>({
       query: (id) => ({
         url: `/service/public/${id}`,
         method: "Get",
       }),
     }),
 
-    getPublicServiceByDoctor: build.mutation<ServiceData[], string>({
+    getPublicServiceByDoctor: build.mutation<PublicService[], string>({
       query: (doctorId) => ({
         url: `/service/public/doctor/${doctorId}`,
+        method: "Get",
+      }),
+    }),
+
+    getPublicDoctorList: build.mutation<DoctorListProps[], void>({
+      query: () => ({
+        url: `/service/public/doctors/`,
         method: "Get",
       }),
     }),
@@ -250,4 +314,6 @@ export const {
   useGetPublicServicesMutation,
   useGetPublicServiceByIdQuery,
   useGetPublicServiceByDoctorMutation,
+
+  useGetPublicDoctorListMutation,
 } = serviceApi;

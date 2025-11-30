@@ -153,7 +153,7 @@ describe('Account Module Integration Tests', () => {
           await dataSource.query('DELETE FROM customer');
           await dataSource.query('DELETE FROM internal');
           await dataSource.query('DELETE FROM doctor');
-          await dataSource.query('DELETE FROM service');
+          // Don't delete service, category, role - they are needed for tests
           // Re-enable foreign key checks
           await dataSource.query('SET FOREIGN_KEY_CHECKS = 1');
         } catch (error) {
@@ -165,7 +165,6 @@ describe('Account Module Integration Tests', () => {
           }
         }
       }
-      // Keep roles and categories as they're needed for setup
     } catch (error) {
       console.warn('⚠️ Error cleaning test data:', error);
     }
@@ -385,6 +384,8 @@ describe('Account Module Integration Tests', () => {
         const updateDto = {
           full_name: 'Updated Name',
           phone: '0987654321',
+          email: 'updatecustomer@test.com', // Required field
+          gender: Gender.Male, // Required field
         };
 
         const response = await request(app.getHttpServer())
@@ -433,12 +434,13 @@ describe('Account Module Integration Tests', () => {
         const customer = customerRepository.create({
           full_name: 'Test Customer',
           email: 'passwordcustomer@test.com',
-          password: 'oldPassword',
+          password: '$2b$10$abcdefghijklmnopqrstuv', // Already hashed password
           phone: '0123456789',
           gender: Gender.Male,
           refreshToken: '',
         });
         const savedCustomer = await customerRepository.save(customer);
+        const oldPasswordHash = savedCustomer.password;
 
         const updatePasswordDto = {
           id: savedCustomer.id,
@@ -458,7 +460,7 @@ describe('Account Module Integration Tests', () => {
         });
         expect(updatedCustomer).not.toBeNull();
         if (updatedCustomer) {
-          expect(updatedCustomer.password).not.toBe('oldPassword');
+          expect(updatedCustomer.password).not.toBe(oldPasswordHash);
           expect(updatedCustomer.password).not.toBe('newPassword123'); // Should be hashed
         }
       });

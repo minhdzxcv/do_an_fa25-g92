@@ -13,11 +13,15 @@ import { AppointmentModule } from './modules/appointment/appointment.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { VoucherModule } from './modules/voucher/voucher.module';
 import { MembershipModule } from './modules/membership/membership.module';
+import { FeedbackModule } from './modules/feedback/feedback.module';
+import { NotificationModule } from './modules/notification/notification.module'; 
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(dataSourceOptions),
+    ScheduleModule.forRoot(),
     AuthModule,
     AccountModule,
     CategoryModule,
@@ -27,6 +31,8 @@ import { MembershipModule } from './modules/membership/membership.module';
     PaymentModule,
     VoucherModule,
     MembershipModule,
+    FeedbackModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

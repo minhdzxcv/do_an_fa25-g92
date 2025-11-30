@@ -130,6 +130,82 @@ describe('CartService', () => {
       });
       expect(cartRepository.save).toHaveBeenCalled();
     });
+
+    it('should return cart with doctor details', async () => {
+      const customerId = 'customer-1';
+      const doctorId = 'doctor-1';
+      const mockDoctor = {
+        id: doctorId,
+        full_name: 'Dr. John Doe',
+        specialization: 'Massage Therapy',
+        avatar: 'avatar.jpg',
+        biography: 'Expert therapist',
+        experience_years: 5,
+      };
+
+      const mockService = {
+        id: 'service-1',
+        name: 'Massage',
+        description: 'Relaxing massage',
+        price: 100000,
+        images: ['img1.jpg'],
+        categoryId: 'cat-1',
+      };
+
+      const mockCart = {
+        id: 'cart-1',
+        customerId,
+        details: [
+          {
+            service: mockService,
+            quantity: 1,
+            doctorId,
+          },
+        ],
+      };
+
+      cartRepository.findOne.mockResolvedValue(mockCart);
+      doctorRepository.findOne.mockResolvedValue(mockDoctor);
+
+      const result = await service.getCartById(customerId);
+
+      expect(result).toBeDefined();
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].doctor).toBeDefined();
+      expect(result.items[0].doctor.name).toBe('Dr. John Doe');
+    });
+
+    it('should return cart without doctor when doctorId is null', async () => {
+      const customerId = 'customer-1';
+      const mockService = {
+        id: 'service-1',
+        name: 'Massage',
+        description: 'Relaxing massage',
+        price: 100000,
+        images: ['img1.jpg'],
+        categoryId: 'cat-1',
+      };
+
+      const mockCart = {
+        id: 'cart-1',
+        customerId,
+        details: [
+          {
+            service: mockService,
+            quantity: 1,
+            doctorId: null,
+          },
+        ],
+      };
+
+      cartRepository.findOne.mockResolvedValue(mockCart);
+
+      const result = await service.getCartById(customerId);
+
+      expect(result).toBeDefined();
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].doctor).toBeUndefined();
+    });
   });
 
   describe('addItemToCart', () => {
@@ -154,6 +230,7 @@ describe('CartService', () => {
 
       cartRepository.findOne.mockResolvedValue(mockCart);
       serviceRepository.findOne.mockResolvedValue(mockService);
+      cartDetailRepository.findOne.mockResolvedValue(null);
       cartDetailRepository.create.mockReturnValue({
         cart: mockCart,
         service: mockService,
@@ -161,9 +238,10 @@ describe('CartService', () => {
         doctorId,
       });
       cartDetailRepository.save.mockResolvedValue({});
+      doctorRepository.findOne.mockResolvedValue({ id: doctorId, full_name: 'Dr. Test' });
       cartRepository.findOne.mockResolvedValueOnce(mockCart).mockResolvedValueOnce({
         ...mockCart,
-        details: [{ service: mockService, doctorId }],
+        details: [{ service: mockService, doctorId, quantity: 1 }],
       });
 
       const result = await service.addItemToCart(customerId, itemData, doctorId);
@@ -247,6 +325,12 @@ describe('CartService', () => {
 
       cartRepository.findOne.mockResolvedValue(mockCart);
       serviceRepository.findOne.mockResolvedValue(mockService);
+      cartDetailRepository.findOne.mockResolvedValue({
+        id: 'existing-detail',
+        serviceId: itemId,
+        doctorId,
+        cart: mockCart,
+      });
 
       await expect(
         service.addItemToCart(customerId, itemData, doctorId),

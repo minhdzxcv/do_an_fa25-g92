@@ -112,6 +112,30 @@ describe('CategoryService', () => {
       expect(categoryRepository.update).toHaveBeenCalledWith(id, dto);
       expect(result).toEqual(updatedCategory);
     });
+
+    it('should throw NotFoundException if category not found for update', async () => {
+      const id = '999';
+      const dto = { name: 'Updated' };
+
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException());
+
+      await expect(service.update(id, dto as any)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should update only provided fields', async () => {
+      const id = '1';
+      const dto = { name: 'Only Name Updated' };
+      const updatedCategory = { ...mockCategory, name: 'Only Name Updated' };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(mockCategory);
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(updatedCategory);
+      categoryRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.update(id, dto as any);
+
+      expect(categoryRepository.update).toHaveBeenCalledWith(id, dto);
+      expect(result).toEqual(updatedCategory);
+    });
   });
 
   describe('remove', () => {

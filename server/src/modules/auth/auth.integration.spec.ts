@@ -289,8 +289,8 @@ describe('Auth Module Integration Tests', () => {
 
   describe('Customer Login', () => {
     beforeEach(async () => {
-      // Create a test customer for login tests
-      const hashedPassword = await hashPassword(testCustomerPassword);
+      // Create a test customer for refresh token tests
+      const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
       const customer = customerRepository.create({
         full_name: 'Test Customer',
         email: testCustomerEmail,
@@ -349,7 +349,7 @@ describe('Auth Module Integration Tests', () => {
 
       it('should fail when customer is inactive', async () => {
         // Create inactive customer
-        const hashedPassword = await hashPassword(testCustomerPassword);
+        const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
         const inactiveCustomer = customerRepository.create({
           full_name: 'Inactive Customer',
           email: 'inactive@example.com',
@@ -411,7 +411,7 @@ describe('Auth Module Integration Tests', () => {
   describe('Customer Profile Management', () => {
     beforeEach(async () => {
       // Create a test customer for profile tests
-      const hashedPassword = await hashPassword(testCustomerPassword);
+      const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
       const customer = customerRepository.create({
         full_name: 'Test Customer',
         email: 'profilecustomer@example.com',
@@ -527,7 +527,7 @@ describe('Auth Module Integration Tests', () => {
   describe('Password Reset', () => {
     beforeEach(async () => {
       // Create a test customer for password reset tests
-      const hashedPassword = await hashPassword(testCustomerPassword);
+      const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
       const customer = customerRepository.create({
         full_name: 'Test Customer',
         email: 'resetcustomer@example.com',
@@ -680,7 +680,7 @@ describe('Auth Module Integration Tests', () => {
         throw new Error('Test role not found');
       }
 
-      const hashedPassword = await hashPassword('password123');
+      const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
       const staff = internalRepository.create({
         full_name: 'Test Staff',
         email: 'staff@test.com',
@@ -708,7 +708,7 @@ describe('Auth Module Integration Tests', () => {
     });
 
     it('should login doctor successfully', async () => {
-      const hashedPassword = await hashPassword('password123');
+      const hashedPassword = '$2b$10$abcdefghijklmnopqrstuv';
       const doctor = doctorRepository.create({
         full_name: 'Test Doctor',
         email: 'doctor@test.com',

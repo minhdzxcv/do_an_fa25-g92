@@ -40,6 +40,7 @@ export class CreateAppointmentDto {
     description: 'ID của bác sĩ phụ trách (nếu có)',
     required: false,
   })
+  
   @IsOptional()
   @IsUUID()
   doctorId?: string;
@@ -108,6 +109,34 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsUUID()
   voucherId?: string;
+
+  @ApiProperty({
+    example: 650000,
+    description: 'Tổng số tiền của cuộc hẹn sau khi áp dụng voucher (nếu có)',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalAmount: number = 0;
+
+  @ApiProperty({
+    example: 10,
+    description: 'Phần trăm giảm giá từ thành viên (nếu có)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  membershipDiscount?: number;
 }
 
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {}
+
+export class RequestCancelDto {
+  @IsUUID()
+  doctorId: string;
+
+  @IsUUID()
+  appointmentId: string;
+
+  @IsNotEmpty()
+  reason: string;
+}

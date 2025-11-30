@@ -4,10 +4,25 @@ process.env.CLIENT_ID_PAYMENT = process.env.CLIENT_ID_PAYMENT || 'test-client-id
 process.env.CHECKSUM_KEY_PAYMENT =
   process.env.CHECKSUM_KEY_PAYMENT || 'test-checksum-key';
 
+// Mock PayOS before any imports that might use it
+const mockCreatePaymentLink = jest.fn().mockResolvedValue({
+  checkoutUrl: 'https://payos.vn/payment/test-checkout-url',
+  orderCode: 123456789,
+  paymentLinkId: 'test-payment-link-id',
+});
+
+const mockPayOSInstance = {
+  createPaymentLink: mockCreatePaymentLink,
+};
+
+jest.mock('@payos/node', () => {
+  return jest.fn().mockImplementation(() => mockPayOSInstance);
+});
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { PaymentModule } from './payment.module';
 import { Appointment } from '@/entities/appointment.entity';
@@ -23,23 +38,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { Gender } from '@/entities/enums/gender.enum';
 import { AppointmentStatus } from '@/entities/enums/appointment-status';
-import { hashPassword } from '@/common/utils/security';
 import { MailService } from '../mail/mail.service';
-
-// Mock PayOS - must be before any imports that use it
-jest.mock('@payos/node', () => {
-  const mockCreatePaymentLink = jest.fn().mockResolvedValue({
-    checkoutUrl: 'https://payos.vn/payment/test-checkout-url',
-    orderCode: 123456789,
-  });
-
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => ({
-      createPaymentLink: mockCreatePaymentLink,
-    })),
-  };
-});
 
 describe('Payment Module Integration Tests', () => {
   let app: INestApplication;
@@ -203,8 +202,15 @@ describe('Payment Module Integration Tests', () => {
         await dataSource.query('DELETE FROM appointment');
         await dataSource.query('SET FOREIGN_KEY_CHECKS = 1');
       }
+      
       // Reset mocks
       jest.clearAllMocks();
+      
+      // Mock PayOS createPaymentLink to return success
+      mockCreatePaymentLink.mockResolvedValue({
+        checkoutUrl: 'https://payos.vn/payment/test-checkout-url',
+        orderCode: 123456789,
+      });
     } catch (error) {
       console.warn('⚠️ Error cleaning test data:', error.message);
       if (dataSource && dataSource.isInitialized) {
@@ -245,7 +251,7 @@ describe('Payment Module Integration Tests', () => {
       }
 
       // Create test Customer using repository from module (like cart.integration.spec.ts)
-      const customerPassword = await hashPassword('password123');
+      const customerPassword = '$2b$10$abcdefghijklmnopqrstuv'; // Hardcoded hash for testing
       customer = await customerRepo.save({
         email: 'paymentcustomer@test.com',
         password: customerPassword,
@@ -257,7 +263,7 @@ describe('Payment Module Integration Tests', () => {
       });
 
       // Create test Doctor using repository from module
-      const doctorPassword = await hashPassword('password123');
+      const doctorPassword = '$2b$10$abcdefghijklmnopqrstuv';
       doctor = await doctorRepo.save({
         full_name: 'Dr. Payment Test',
         email: 'paymentdoctor@test.com',
@@ -272,7 +278,7 @@ describe('Payment Module Integration Tests', () => {
       });
 
       // Create test Staff using repository from module
-      const staffPassword = await hashPassword('password123');
+      const staffPassword = '$2b$10$abcdefghijklmnopqrstuv';
       staff = await internalRepo.save({
         full_name: 'Staff Payment Test',
         email: 'paymentstaff@test.com',
@@ -347,7 +353,7 @@ describe('Payment Module Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/payment/create-link')
         .send(createLinkDto)
-        .expect(200);
+        .expect(201);
 
       expect(response.body).toHaveProperty('checkoutUrl');
       expect(response.body.checkoutUrl).toBe(
@@ -380,7 +386,7 @@ describe('Payment Module Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/payment/create-link')
         .send(createLinkDto)
-        .expect(500); // Will fail when trying to update non-existent appointment
+        .expect(404);
     });
 
     it('should fail when required fields are missing', async () => {
@@ -435,7 +441,7 @@ describe('Payment Module Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/payment/update-status-deposited')
         .send(updateDto)
-        .expect(200);
+        .expect(201);
 
       // Verify appointment status was updated
       const updatedAppointment = await appointmentRepo.findOne({
@@ -445,7 +451,7 @@ describe('Payment Module Integration Tests', () => {
 
       expect(updatedAppointment).not.toBeNull();
       if (updatedAppointment) {
-        expect(updatedAppointment.status).toBe(AppointmentStatus.Deposited);
+        expect(updatedAppointment.status).toBe('deposited');
         expect(updatedAppointment.depositAmount).toBeGreaterThan(0);
         expect(updatedAppointment.depositAmount).toBe(100000); // 50% of 200000
       }
@@ -459,7 +465,7 @@ describe('Payment Module Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/payment/update-status-deposited')
         .send(updateDto)
-        .expect(500); // Will throw error
+        .expect(404);
     });
 
     it('should fail when appointment status is not Confirmed', async () => {
@@ -475,7 +481,7 @@ describe('Payment Module Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/payment/update-status-deposited')
         .send(updateDto)
-        .expect(500); // Will throw error about invalid status
+        .expect(400);
     });
 
     it('should fail when required fields are missing', async () => {
@@ -529,7 +535,7 @@ describe('Payment Module Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/payment/update-status-paid')
         .send(updateDto)
-        .expect(200);
+        .expect(201);
 
       // Verify appointment status was updated
       const updatedAppointment = await appointmentRepo.findOne({
@@ -538,7 +544,7 @@ describe('Payment Module Integration Tests', () => {
 
       expect(updatedAppointment).not.toBeNull();
       if (updatedAppointment) {
-        expect(updatedAppointment.status).toBe(AppointmentStatus.Paid);
+        expect(updatedAppointment.status).toBe('paid');
         expect(updatedAppointment.paymentMethod).toBe('qr');
       }
     });
@@ -551,7 +557,7 @@ describe('Payment Module Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/payment/update-status-paid')
         .send(updateDto)
-        .expect(500); // Will throw error
+        .expect(404);
     });
 
     it('should fail when appointment status is not Completed', async () => {
@@ -567,7 +573,7 @@ describe('Payment Module Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/payment/update-status-paid')
         .send(updateDto)
-        .expect(500); // Will throw error about invalid status
+        .expect(400);
     });
 
     it('should fail when required fields are missing', async () => {
@@ -624,7 +630,7 @@ describe('Payment Module Integration Tests', () => {
       const linkResponse = await request(app.getHttpServer())
         .post('/payment/create-link')
         .send(createLinkDto)
-        .expect(200);
+        .expect(201);
 
       expect(linkResponse.body).toHaveProperty('checkoutUrl');
 
@@ -646,7 +652,7 @@ describe('Payment Module Integration Tests', () => {
         await request(app.getHttpServer())
           .post('/payment/update-status-deposited')
           .send(depositDto)
-          .expect(200);
+          .expect(201);
 
         // Step 5: Update to completed status (simulate service completion)
         await appointmentRepo.update(newAppointment.id, {

@@ -8,7 +8,16 @@ import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
 import { Service } from '@/entities/service.entity';
 import { Spa } from '@/entities/spa.entity';
 import { Internal } from '@/entities/internal.entity';
+import { Cart } from '@/entities/cart.entity';
+import { CartDetail } from '@/entities/cartDetails.entity';
+import { Voucher } from '@/entities/voucher.entity';
+import { CustomerVoucher } from '@/entities/customerVoucher.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
+import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
 import { MailService } from '../mail/mail.service';
+import { NotificationService } from '../notification/notification.service';
+import { VoucherService } from '../voucher/voucher.service';
 import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { CreateAppointmentDto, UpdateAppointmentDto } from './appointment/appointment.dto';
 
@@ -109,6 +118,52 @@ describe('AppointmentService', () => {
       findOne: jest.fn(),
     };
 
+    const mockCartRepository = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockCartDetailRepository = {
+      find: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    const mockVoucherRepository = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockCustomerVoucherRepository = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockInvoiceRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockInvoiceDetailRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockCancelRequestRepository = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockNotificationService = {
+      create: jest.fn().mockResolvedValue(undefined),
+      sendNotificationToCustomer: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockVoucherService = {
+      findVouchersByCustomer: jest.fn(),
+    };
+
     const mockMailService = {
       confirmAppointment: jest.fn().mockResolvedValue(undefined),
       confirmAppointmentDeposit: jest.fn().mockResolvedValue(undefined),
@@ -153,12 +208,48 @@ describe('AppointmentService', () => {
           useValue: mockInternalRepository,
         },
         {
+          provide: getRepositoryToken(Cart),
+          useValue: mockCartRepository,
+        },
+        {
+          provide: getRepositoryToken(CartDetail),
+          useValue: mockCartDetailRepository,
+        },
+        {
+          provide: getRepositoryToken(Voucher),
+          useValue: mockVoucherRepository,
+        },
+        {
+          provide: getRepositoryToken(CustomerVoucher),
+          useValue: mockCustomerVoucherRepository,
+        },
+        {
+          provide: getRepositoryToken(Invoice),
+          useValue: mockInvoiceRepository,
+        },
+        {
+          provide: getRepositoryToken(InvoiceDetail),
+          useValue: mockInvoiceDetailRepository,
+        },
+        {
+          provide: getRepositoryToken(DoctorCancelRequest),
+          useValue: mockCancelRequestRepository,
+        },
+        {
           provide: MailService,
           useValue: mockMailService,
         },
         {
           provide: DataSource,
           useValue: mockDataSource,
+        },
+        {
+          provide: NotificationService,
+          useValue: mockNotificationService,
+        },
+        {
+          provide: VoucherService,
+          useValue: mockVoucherService,
         },
       ],
     }).compile();
@@ -260,7 +351,7 @@ describe('AppointmentService', () => {
       expect(appointmentRepository.find).toHaveBeenCalledWith({
         where: { customerId: 'customer-1' },
         relations: ['doctor', 'details', 'details.service', 'customer'],
-        order: { appointment_date: 'ASC' },
+        order: { createdAt: 'DESC' },
       });
     });
   });
@@ -302,6 +393,7 @@ describe('AppointmentService', () => {
             price: 100000,
           },
         ],
+        totalAmount: 100000,
       };
 
       serviceRepository.findBy.mockResolvedValue([mockService]);
@@ -328,6 +420,7 @@ describe('AppointmentService', () => {
             price: 100000,
           },
         ],
+        totalAmount: 100000,
       };
 
       serviceRepository.findBy.mockResolvedValue([]);
@@ -397,11 +490,23 @@ describe('AppointmentService', () => {
 
   describe('confirmAppointment', () => {
     it('should confirm appointment successfully', async () => {
-      appointmentRepository.findOne.mockResolvedValue(mockAppointment);
+      const appointmentWithDetails = {
+        ...mockAppointment,
+        details: [
+          {
+            id: 'detail-1',
+            serviceId: 'service-1',
+            service: mockService,
+            price: 100000,
+          },
+        ],
+      };
+      
+      appointmentRepository.findOne.mockResolvedValue(appointmentWithDetails);
       internalRepository.findOne.mockResolvedValue(mockStaff);
       spaRepository.findOne.mockResolvedValue(mockSpa);
       appointmentRepository.save.mockResolvedValue({
-        ...mockAppointment,
+        ...appointmentWithDetails,
         status: AppointmentStatus.Confirmed,
         staffId: 'staff-1',
       });
@@ -486,6 +591,253 @@ describe('AppointmentService', () => {
 
       expect(result).toEqual({ message: 'Đã xoá lịch hẹn' });
       expect(appointmentRepository.softRemove).toHaveBeenCalled();
+    });
+  });
+
+  describe('getDashboard', () => {
+    it('should return dashboard statistics for full year', async () => {
+      const mockInvoices = [
+        {
+          id: 'invoice-1',
+          finalAmount: 200000,
+          payment_status: 'paid',
+          customer: mockCustomer,
+          details: [
+            {
+              service: mockService,
+              quantity: 2,
+            },
+          ],
+          createdAt: new Date(2024, 5, 1),
+        },
+      ];
+
+      const mockServices = [mockService];
+
+      const mockInvoiceRepository = {
+        find: jest.fn().mockResolvedValue(mockInvoices),
+      };
+
+      const mockServiceRepository = {
+        find: jest.fn().mockResolvedValue(mockServices),
+        findOne: jest.fn(),
+        findBy: jest.fn(),
+      };
+
+      // Inject mocks directly
+      (service as any).invoiceRepo = mockInvoiceRepository;
+      (service as any).serviceRepo = mockServiceRepository;
+
+      const result = await service.getDashboard({ year: 2024 });
+
+      expect(result).toHaveProperty('totalCustomers');
+      expect(result).toHaveProperty('totalAmount');
+      expect(result).toHaveProperty('totalInvoices');
+      expect(result).toHaveProperty('totalServices');
+      expect(result).toHaveProperty('topServices');
+      expect(result).toHaveProperty('topCustomers');
+      expect(result.totalInvoices).toBe(1);
+      expect(result.totalAmount).toBe(200000);
+    });
+
+    it('should return dashboard statistics for specific month', async () => {
+      const mockInvoices = [];
+      const mockServices = [];
+
+      const mockInvoiceRepository = {
+        find: jest.fn().mockResolvedValue(mockInvoices),
+      };
+
+      const mockServiceRepository = {
+        find: jest.fn().mockResolvedValue(mockServices),
+        findOne: jest.fn(),
+        findBy: jest.fn(),
+      };
+
+      (service as any).invoiceRepo = mockInvoiceRepository;
+      (service as any).serviceRepo = mockServiceRepository;
+
+      const result = await service.getDashboard({ year: 2024, month: 6 });
+
+      expect(result).toHaveProperty('totalCustomers', 0);
+      expect(result).toHaveProperty('totalAmount', 0);
+      expect(result).toHaveProperty('totalInvoices', 0);
+    });
+  });
+
+  describe('requestCancelByDoctorBulk', () => {
+    it('should create cancel requests for valid appointments', async () => {
+      const appointmentIds = ['appointment-1'];
+      const doctorId = 'doctor-1';
+      const reason = 'Doctor emergency';
+
+      const mockCancelRequestRepository = {
+        findOne: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockReturnValue({ appointmentId: 'appointment-1', doctorId, reason }),
+        save: jest.fn().mockResolvedValue({}),
+        find: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+
+      appointmentRepository.findOne.mockResolvedValue({
+        ...mockAppointment,
+        doctorId: 'doctor-1',
+      });
+
+      const result = await service.requestCancelByDoctorBulk(appointmentIds, doctorId, reason);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].status).toBe('Gửi yêu cầu thành công');
+      expect(mockCancelRequestRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when no appointments selected', async () => {
+      await expect(
+        service.requestCancelByDoctorBulk([], 'doctor-1', 'reason'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should handle unauthorized doctor', async () => {
+      const appointmentIds = ['appointment-1'];
+      const doctorId = 'doctor-2';
+      const reason = 'Test';
+
+      appointmentRepository.findOne.mockResolvedValue({
+        ...mockAppointment,
+        doctorId: 'doctor-1',
+      });
+
+      const result = await service.requestCancelByDoctorBulk(appointmentIds, doctorId, reason);
+
+      expect(result[0].status).toBe('Không có quyền hủy');
+    });
+  });
+
+  describe('approveRequest', () => {
+    it('should approve cancel request and cancel appointment', async () => {
+      const mockRequest = {
+        id: 'request-1',
+        appointmentId: 'appointment-1',
+        doctorId: 'doctor-1',
+        reason: 'Doctor emergency',
+        status: 'pending',
+      };
+
+      const mockCancelRequestRepository = {
+        findOne: jest.fn().mockResolvedValue(mockRequest),
+        save: jest.fn().mockResolvedValue({ ...mockRequest, status: 'approved' }),
+        find: jest.fn(),
+        create: jest.fn(),
+      };
+
+      const mockVoucherService = {
+        createForCustomers: jest.fn().mockResolvedValue({}),
+        findVouchersByCustomer: jest.fn(),
+      };
+
+      const mockNotificationService = {
+        create: jest.fn().mockResolvedValue(undefined),
+        sendNotificationToCustomer: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+      (service as any).voucherService = mockVoucherService;
+      (service as any).notificationService = mockNotificationService;
+
+      appointmentRepository.findOne.mockResolvedValue(mockAppointment);
+      appointmentRepository.update = jest.fn().mockResolvedValue({});
+
+      const result = await service.approveRequest('request-1');
+
+      expect(result.message).toBe('Đã duyệt yêu cầu và hủy appointment.');
+      expect(mockCancelRequestRepository.save).toHaveBeenCalled();
+      expect(appointmentRepository.update).toHaveBeenCalled();
+      expect(mockNotificationService.create).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when request not found', async () => {
+      const mockCancelRequestRepository = {
+        findOne: jest.fn().mockResolvedValue(null),
+        save: jest.fn(),
+        find: jest.fn(),
+        create: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+
+      await expect(service.approveRequest('nonexistent-id')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('rejectRequest', () => {
+    it('should reject cancel request successfully', async () => {
+      const mockRequest = {
+        id: 'request-1',
+        appointmentId: 'appointment-1',
+        doctorId: 'doctor-1',
+        reason: 'Test',
+        status: 'pending',
+      };
+
+      const mockCancelRequestRepository = {
+        findOne: jest.fn().mockResolvedValue(mockRequest),
+        save: jest.fn().mockResolvedValue({ ...mockRequest, status: 'rejected' }),
+        find: jest.fn(),
+        create: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+
+      const result = await service.rejectRequest('request-1');
+
+      expect(result.message).toBe('Đã từ chối yêu cầu.');
+      expect(mockCancelRequestRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when request not found', async () => {
+      const mockCancelRequestRepository = {
+        findOne: jest.fn().mockResolvedValue(null),
+        save: jest.fn(),
+        find: jest.fn(),
+        create: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+
+      await expect(service.rejectRequest('nonexistent-id')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findAllPending', () => {
+    it('should return all pending cancel requests', async () => {
+      const mockRequests = [
+        {
+          id: 'request-1',
+          appointmentId: 'appointment-1',
+          doctorId: 'doctor-1',
+          status: 'pending',
+          appointment: mockAppointment,
+          doctor: mockDoctor,
+        },
+      ];
+
+      const mockCancelRequestRepository = {
+        find: jest.fn().mockResolvedValue(mockRequests),
+        findOne: jest.fn(),
+        save: jest.fn(),
+        create: jest.fn(),
+      };
+
+      (service as any).cancelRepo = mockCancelRequestRepository;
+
+      const result = await service.findAllPending();
+
+      expect(result).toEqual(mockRequests);
+      expect(mockCancelRequestRepository.find).toHaveBeenCalledWith({
+        where: { status: 'pending' },
+        relations: ['appointment', 'doctor'],
+      });
     });
   });
 });

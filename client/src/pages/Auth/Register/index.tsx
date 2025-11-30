@@ -97,7 +97,7 @@ const RegisterPage = () => {
             </Text>
           </div>
 
-          <div className="py-3">
+          {/* <div className="py-3">
             <button className={cx("btn-google")}>
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -109,7 +109,7 @@ const RegisterPage = () => {
 
           <div className={cx("divider", "my-4 text-gray-500")}>
             Hoặc đăng ký bằng email
-          </div>
+          </div> */}
 
           <Form
             form={form}
@@ -221,14 +221,14 @@ const RegisterPage = () => {
             </Form.Item>
 
             <FancyButton
-              onClick={() => form.submit()}
               icon={<></>}
               label="Đăng ký"
               variant="primary"
               size="middle"
               // loading={isLoading}
+              htmlType="submit"
               className="w-100"
-            ></FancyButton>
+            />
 
             <div className="text-center mt-3">
               <Text>Bạn đã có tài khoản? </Text>

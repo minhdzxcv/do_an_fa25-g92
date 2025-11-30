@@ -165,6 +165,44 @@ describe('AccountService', () => {
         jest.clearAllMocks();
     });
 
+    describe('checkDuplicateEmailWithRole', () => {
+        it('returns Customer when customer exists', async () => {
+            customerRepository.findOne.mockResolvedValue({ id: 'c1' });
+            internalRepository.findOne.mockResolvedValue(null);
+            doctorRepository.findOne.mockResolvedValue(null);
+
+            const result = await service.checkDuplicateEmailWithRole('a@x.com');
+            expect(result).toBe(RoleEnum.Customer);
+        });
+
+        it('returns Doctor when doctor exists', async () => {
+            customerRepository.findOne.mockResolvedValue(null);
+            doctorRepository.findOne.mockResolvedValue({ id: 'd1' });
+            internalRepository.findOne.mockResolvedValue(null);
+
+            const result = await service.checkDuplicateEmailWithRole('d@x.com');
+            expect(result).toBe(RoleEnum.Doctor);
+        });
+
+        it('returns proper internal role (staff)', async () => {
+            customerRepository.findOne.mockResolvedValue(null);
+            doctorRepository.findOne.mockResolvedValue(null);
+            internalRepository.findOne.mockResolvedValue({ role: { name: 'staff' } });
+
+            const result = await service.checkDuplicateEmailWithRole('s@x.com');
+            expect(result).toBe(RoleEnum.Staff);
+        });
+
+        it('returns null when not found', async () => {
+            customerRepository.findOne.mockResolvedValue(null);
+            doctorRepository.findOne.mockResolvedValue(null);
+            internalRepository.findOne.mockResolvedValue(null);
+
+            const result = await service.checkDuplicateEmailWithRole('noone@x.com');
+            expect(result).toBeNull();
+        });
+    });
+
     describe('Customer Management', () => {
         describe('createCustomer', () => {
             it('should create a new customer successfully', async () => {

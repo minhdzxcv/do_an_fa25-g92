@@ -11,9 +11,11 @@ import { Customer } from '@/entities/customer.entity';
 import { Internal } from '@/entities/internal.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { Role } from '@/entities/role.entity';
+import { Spa } from '@/entities/spa.entity';
 import { RoleEnum } from '@/common/types/role.enum';
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '../mail/mail.service';
+import { NotificationService } from '../notification/notification.service';
 import { UpdateCustomerProfileDto, ChangePasswordDto } from './dto/customer.dto';
 
 // Mock cloudinary
@@ -31,9 +33,11 @@ describe('AuthService', () => {
     let internalRepository: any;
     let doctorRepository: any;
     let roleRepository: any;
+    let spaRepository: any;
     let jwtService: JwtService;
     let configService: ConfigService;
     let mailService: MailService;
+    let notificationService: any;
 
     const mockCustomer = {
         id: 'customer-1',
@@ -41,6 +45,7 @@ describe('AuthService', () => {
         full_name: 'Test Customer',
         password: 'hashedPassword',
         isActive: true,
+        isEmailVerified: true,
     };
 
     const mockInternal = {
@@ -64,6 +69,12 @@ describe('AuthService', () => {
         id: 1,
         name: 'admin',
         description: 'System administrator',
+    };
+
+    const mockSpa = {
+        id: 'spa-1',
+        name: 'Test Spa',
+        address: '123 Test St',
     };
 
     beforeEach(async () => {
@@ -94,6 +105,16 @@ describe('AuthService', () => {
             save: jest.fn(),
         };
 
+        const mockSpaRepository = {
+            findOne: jest.fn().mockResolvedValue(mockSpa),
+            save: jest.fn(),
+        };
+
+        const mockNotificationService = {
+            create: jest.fn().mockResolvedValue(undefined),
+            sendNotificationToCustomer: jest.fn().mockResolvedValue(undefined),
+        };
+
         const mockJwtService = {
             signAsync: jest.fn().mockResolvedValue('mock-token'),
             verifyAsync: jest.fn().mockResolvedValue({ email: 'test@test.com' }),
@@ -110,6 +131,7 @@ describe('AuthService', () => {
             confirmAppointment: jest.fn().mockResolvedValue(undefined),
             confirmAppointmentDeposit: jest.fn().mockResolvedValue(undefined),
             sendThankYouForUsingServiceEmail: jest.fn().mockResolvedValue(undefined),
+            sendVerifyEmail: jest.fn().mockResolvedValue(undefined),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -132,6 +154,10 @@ describe('AuthService', () => {
                     useValue: mockRoleRepository,
                 },
                 {
+                    provide: getRepositoryToken(Spa),
+                    useValue: mockSpaRepository,
+                },
+                {
                     provide: DataSource,
                     useValue: mockDataSource,
                 },
@@ -147,6 +173,10 @@ describe('AuthService', () => {
                     provide: MailService,
                     useValue: mockMailService,
                 },
+                {
+                    provide: NotificationService,
+                    useValue: mockNotificationService,
+                },
             ],
         }).compile();
 
@@ -155,9 +185,11 @@ describe('AuthService', () => {
         internalRepository = module.get(getRepositoryToken(Internal));
         doctorRepository = module.get(getRepositoryToken(Doctor));
         roleRepository = module.get(getRepositoryToken(Role));
+        spaRepository = module.get(getRepositoryToken(Spa));
         jwtService = module.get<JwtService>(JwtService);
         configService = module.get<ConfigService>(ConfigService);
         mailService = module.get<MailService>(MailService);
+        notificationService = module.get(NotificationService);
     });
 
     afterEach(() => {
@@ -317,13 +349,15 @@ describe('AuthService', () => {
 
             const result = await service.registerCustomer(customerData);
 
-            expect(result).toEqual({
-                ...customerData,
-                id: 'new-customer-id',
-                password: 'hashedPassword',
-            });
+            expect(result).toHaveProperty('id', 'new-customer-id');
+            expect(result).toHaveProperty('email', customerData.email);
+            expect(result).toHaveProperty('full_name', customerData.full_name);
+            expect(result).toHaveProperty('phone', customerData.phone);
+            expect(result).toHaveProperty('emailVerificationToken');
+            expect(result).toHaveProperty('emailVerificationTokenExpire');
             expect(customerRepository.create).toHaveBeenCalledWith(customerData);
             expect(customerRepository.save).toHaveBeenCalled();
+            expect(mailService.sendVerifyEmail).toHaveBeenCalled();
         });
 
         it('should throw error when email already exists', async () => {
@@ -372,16 +406,12 @@ describe('AuthService', () => {
 
             const result = await service.login(loginDto);
 
-            expect(result).toEqual({
-                id: 'customer-1',
-                email: 'customer@test.com',
-                name: 'Test Customer',
-                role: RoleEnum.Customer,
-                spaId: null,
-                address: null,
-                accessToken: 'access-token',
-                refreshToken: 'refresh-token',
-            });
+            expect(result).toHaveProperty('id', 'customer-1');
+            expect(result).toHaveProperty('email', 'customer@test.com');
+            expect(result).toHaveProperty('name', 'Test Customer');
+            expect(result).toHaveProperty('role', RoleEnum.Customer);
+            expect(result).toHaveProperty('accessToken', 'access-token');
+            expect(result).toHaveProperty('refreshToken', 'refresh-token');
         });
 
         it('should login admin successfully', async () => {
@@ -503,7 +533,7 @@ describe('AuthService', () => {
         });
     });
 
-    describe('updateCustomerAvatar', () => {
+    describe('updateAvatarUniversal', () => {
         it('should update customer avatar successfully', async () => {
             const mockFile = {
                 fieldname: 'file',
@@ -529,7 +559,7 @@ describe('AuthService', () => {
                 avatar: 'https://cloudinary.com/avatar.jpg',
             });
 
-            const result = await service.updateCustomerAvatar('customer-1', mockFile);
+            const result = await service.updateAvatarUniversal('customer-1', RoleEnum.Customer, mockFile);
 
             expect(result).toHaveProperty('avatar', 'https://cloudinary.com/avatar.jpg');
             expect(result).not.toHaveProperty('password');
@@ -544,7 +574,7 @@ describe('AuthService', () => {
             customerRepository.findOne.mockResolvedValue(null);
 
             await expect(
-                service.updateCustomerAvatar('nonexistent-id', mockFile),
+                service.updateAvatarUniversal('nonexistent-id', RoleEnum.Customer, mockFile),
             ).rejects.toThrow(NotFoundException);
         });
     });
@@ -612,7 +642,7 @@ describe('AuthService', () => {
                 password: 'newHashedPassword',
             });
 
-            const result = await service.changePassword('customer-1', changePasswordDto);
+            const result = await service.changePassword('customer-1', RoleEnum.Customer, changePasswordDto);
 
             expect(result).toEqual({ message: 'Đổi mật khẩu thành công' });
             expect(customerRepository.save).toHaveBeenCalled();
@@ -627,7 +657,7 @@ describe('AuthService', () => {
             customerRepository.findOne.mockResolvedValue(null);
 
             await expect(
-                service.changePassword('nonexistent-id', changePasswordDto),
+                service.changePassword('nonexistent-id', RoleEnum.Customer, changePasswordDto),
             ).rejects.toThrow(NotFoundException);
         });
 
@@ -641,10 +671,10 @@ describe('AuthService', () => {
             jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
 
             await expect(
-                service.changePassword('customer-1', changePasswordDto),
+                service.changePassword('customer-1', RoleEnum.Customer, changePasswordDto),
             ).rejects.toThrow(BadRequestException);
             await expect(
-                service.changePassword('customer-1', changePasswordDto),
+                service.changePassword('customer-1', RoleEnum.Customer, changePasswordDto),
             ).rejects.toThrow('Mật khẩu cũ không chính xác');
         });
     });
@@ -757,6 +787,210 @@ describe('AuthService', () => {
             await expect(service.resetPassword(token, newPassword)).rejects.toThrow(
                 BadRequestException,
             );
+        });
+    });
+
+    describe('verifyEmail', () => {
+        it('should verify email successfully', async () => {
+            const token = 'verify-token';
+            const customer = {
+                ...mockCustomer,
+                emailVerificationToken: token,
+                emailVerificationTokenExpire: new Date(Date.now() + 15 * 60 * 1000),
+                isEmailVerified: false,
+            };
+
+            customerRepository.findOne.mockResolvedValue(customer);
+            customerRepository.save.mockResolvedValue({
+                ...customer,
+                isEmailVerified: true,
+                isVerified: true,
+                emailVerificationToken: null,
+                emailVerificationTokenExpire: null,
+            });
+
+            const result = await service.verifyEmail(token);
+
+            expect(result).toEqual({ message: 'Email đã được xác thực thành công' });
+            expect(customerRepository.save).toHaveBeenCalled();
+            expect(notificationService.create).toHaveBeenCalled();
+        });
+
+        it('should throw BadRequestException when token is empty', async () => {
+            await expect(service.verifyEmail('')).rejects.toThrow(BadRequestException);
+        });
+
+        it('should throw NotFoundException when token is invalid', async () => {
+            customerRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.verifyEmail('invalid-token')).rejects.toThrow(NotFoundException);
+        });
+
+        it('should throw BadRequestException when token is expired', async () => {
+            const customer = {
+                ...mockCustomer,
+                emailVerificationToken: 'token',
+                emailVerificationTokenExpire: new Date(Date.now() - 1000),
+            };
+
+            customerRepository.findOne.mockResolvedValue(customer);
+
+            await expect(service.verifyEmail('token')).rejects.toThrow(BadRequestException);
+        });
+    });
+
+    describe('findSpaProfile', () => {
+        it('should return spa profile', async () => {
+            const result = await service.findSpaProfile();
+
+            expect(result).toEqual(mockSpa);
+        });
+
+        it('should throw NotFoundException when spa not found', async () => {
+            // Create a new service instance with null spa
+            const mockSpaRepoNull = {
+                findOne: jest.fn().mockResolvedValue(null),
+                save: jest.fn(),
+            };
+
+            const module2 = await Test.createTestingModule({
+                providers: [
+                    AuthService,
+                    { provide: getRepositoryToken(Customer), useValue: customerRepository },
+                    { provide: getRepositoryToken(Internal), useValue: internalRepository },
+                    { provide: getRepositoryToken(Doctor), useValue: doctorRepository },
+                    { provide: getRepositoryToken(Role), useValue: roleRepository },
+                    { provide: getRepositoryToken(Spa), useValue: mockSpaRepoNull },
+                    { provide: DataSource, useValue: {} },
+                    { provide: ConfigService, useValue: configService },
+                    { provide: JwtService, useValue: jwtService },
+                    { provide: MailService, useValue: mailService },
+                    { provide: NotificationService, useValue: notificationService },
+                ],
+            }).compile();
+
+            const service2 = module2.get<AuthService>(AuthService);
+
+            await expect(service2.findSpaProfile()).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('updateSpaProfile', () => {
+        it('should update spa profile without file', async () => {
+            const dto = { name: 'Updated Spa', address: '456 New St' };
+
+            spaRepository.findOne.mockResolvedValueOnce(mockSpa);
+            spaRepository.save.mockResolvedValue({ ...mockSpa, ...dto });
+
+            const result = await service.updateSpaProfile(dto);
+
+            expect(result.message).toBe('Cập nhật thông tin Spa thành công');
+            expect(result.data).toHaveProperty('name', 'Updated Spa');
+            expect(spaRepository.save).toHaveBeenCalled();
+        });
+
+        it('should update spa profile with logo file', async () => {
+            const dto = { name: 'Updated Spa' };
+            const mockFile = {
+                buffer: Buffer.from('logo'),
+            } as Express.Multer.File;
+
+            const { cloudinary } = require('@/utils/cloudinary');
+            const mockUploadStream = jest.fn();
+            cloudinary.uploader.upload_stream = mockUploadStream;
+
+            mockUploadStream.mockImplementation((options, callback) => {
+                callback(null, { secure_url: 'https://cloudinary.com/logo.jpg' });
+                return { end: jest.fn() };
+            });
+
+            spaRepository.findOne.mockResolvedValueOnce(mockSpa);
+            spaRepository.save.mockResolvedValue({ ...mockSpa, ...dto, logo: 'https://cloudinary.com/logo.jpg' });
+
+            const result = await service.updateSpaProfile(dto, mockFile);
+
+            expect(result.data).toHaveProperty('logo', 'https://cloudinary.com/logo.jpg');
+            expect(spaRepository.save).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when spa not found', async () => {
+            spaRepository.findOne.mockResolvedValueOnce(null);
+
+            await expect(service.updateSpaProfile({ name: 'Test' })).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('findStaffProfile', () => {
+        it('should return staff profile', async () => {
+            internalRepository.findOne.mockResolvedValue(mockInternal);
+
+            const result = await service.findStaffProfile('internal-1');
+
+            expect(result).toEqual(mockInternal);
+        });
+
+        it('should throw NotFoundException when staff not found', async () => {
+            internalRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.findStaffProfile('nonexistent')).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('updateStaffProfile', () => {
+        it('should update staff profile successfully', async () => {
+            const dto = { full_name: 'Updated Staff', phone: '0987654321' };
+
+            internalRepository.findOne.mockResolvedValue(mockInternal);
+            internalRepository.save.mockResolvedValue({ ...mockInternal, ...dto });
+
+            const result = await service.updateStaffProfile('internal-1', dto);
+
+            expect(result.message).toBe('Cập nhật thông tin nhân viên thành công');
+            expect(result.data).toHaveProperty('full_name', 'Updated Staff');
+            expect(internalRepository.save).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when staff not found', async () => {
+            internalRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.updateStaffProfile('nonexistent', {})).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('findDoctorProfile', () => {
+        it('should return doctor profile', async () => {
+            doctorRepository.findOne.mockResolvedValue(mockDoctor);
+
+            const result = await service.findDoctorProfile('doctor-1');
+
+            expect(result).toEqual(mockDoctor);
+        });
+
+        it('should throw NotFoundException when doctor not found', async () => {
+            doctorRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.findDoctorProfile('nonexistent')).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('updateDoctorProfile', () => {
+        it('should update doctor profile successfully', async () => {
+            const dto = { full_name: 'Updated Doctor', phone: '0987654321' };
+
+            doctorRepository.findOne.mockResolvedValue(mockDoctor);
+            doctorRepository.save.mockResolvedValue({ ...mockDoctor, ...dto });
+
+            const result = await service.updateDoctorProfile('doctor-1', dto);
+
+            expect(result.message).toBe('Cập nhật thông tin bác sĩ thành công');
+            expect(result.data).toHaveProperty('full_name', 'Updated Doctor');
+            expect(doctorRepository.save).toHaveBeenCalled();
+        });
+
+        it('should throw NotFoundException when doctor not found', async () => {
+            doctorRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.updateDoctorProfile('nonexistent', {})).rejects.toThrow(NotFoundException);
         });
     });
 });

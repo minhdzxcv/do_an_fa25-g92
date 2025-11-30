@@ -8,6 +8,7 @@ import {
   InputNumber,
   Modal,
   Row,
+  Select,
   Space,
   Spin,
   Switch,
@@ -23,6 +24,7 @@ import {
   type VoucherFormValues,
 } from "@/services/voucher";
 import FancyButton from "@/components/FancyButton";
+import { useGetCustomersMutation } from "@/services/account";
 
 const { RangePicker } = DatePicker;
 
@@ -40,9 +42,34 @@ export default function AddVoucher({
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [createVoucher] = useCreateVoucherMutation();
+  const [getCustomers] = useGetCustomersMutation();
+  const [customerOptions, setCustomerOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) form.resetFields();
+
+    const handleGetCustomers = async () => {
+      try {
+        const res = await getCustomers().unwrap();
+        if (res)
+          setCustomerOptions(
+            res.map(
+              (customer: { id: string; full_name: string; email: string }) => ({
+                label: `${customer.full_name} - ${customer.email}`,
+                value: customer.id,
+              })
+            )
+          );
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+      }
+    };
+
+    if (isOpen) {
+      handleGetCustomers();
+    }
   }, [isOpen]);
 
   const onFinish = async (values: VoucherFormValues) => {
@@ -57,6 +84,7 @@ export default function AddVoucher({
         validFrom: values.validRange?.[0]?.toISOString() ?? "",
         validTo: values.validRange?.[1]?.toISOString() ?? "",
         isActive: values.isActive ?? true,
+        customerIds: values.customerIds || [],
       };
 
       const res = await createVoucher(payload);
@@ -138,41 +166,44 @@ export default function AddVoucher({
           <Row gutter={[16, 16]}>
             <Col xs={24} md={8}>
               <Form.Item label="Giảm theo số tiền (VNĐ)" name="discountAmount">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
+                  suffix="₫"
                   placeholder="Nhập số tiền giảm"
                   min={0}
                   formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
+                    value ? `${Number(value).toLocaleString()}` : ""
                   }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  // parser={(value) =>
+                  //   Number(value?.toString().replace(/[₫,]/g, "") || 0)
+                  // }
                 />
               </Form.Item>
             </Col>
 
             <Col xs={24} md={8}>
               <Form.Item label="Giảm theo %" name="discountPercent">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
                   placeholder="Nhập phần trăm giảm"
                   min={0}
                   max={100}
-                  formatter={(value) => `${value}%`}
-                  parser={(value) => Number(value?.replace("%", "") || 0)}
+                  formatter={(value) => (value ? `${value}` : "")}
+                  suffix="%"
                 />
               </Form.Item>
             </Col>
 
             <Col xs={24} md={8}>
               <Form.Item label="Giảm tối đa (VNĐ)" name="maxDiscount">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
                   placeholder="Nhập mức giảm tối đa"
                   min={0}
                   formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
+                    value ? `${Number(value).toLocaleString()}` : ""
                   }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  suffix="₫"
                 />
               </Form.Item>
             </Col>
@@ -186,6 +217,49 @@ export default function AddVoucher({
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")
               }
+            />
+          </Form.Item>
+
+          <Form.Item label="Áp dụng cho khách hàng" name="customerIds">
+            <Select
+              mode="multiple"
+              placeholder="Chọn khách hàng áp dụng voucher"
+              options={customerOptions}
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              dropdownRender={(menu) => (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 8,
+                    }}
+                  >
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        const allValues = customerOptions.map((c) => c.value);
+                        form.setFieldsValue({ customerIds: allValues });
+                      }}
+                    >
+                      Chọn tất cả
+                    </Button>
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        form.setFieldsValue({ customerIds: [] });
+                      }}
+                    >
+                      Bỏ chọn tất cả
+                    </Button>
+                  </div>
+                  {menu}
+                </>
+              )}
             />
           </Form.Item>
 

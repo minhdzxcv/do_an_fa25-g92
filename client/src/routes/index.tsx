@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Homepage from "../pages/Homepage";
 import HomeLayouts from "../layouts/Home";
-import { configRoutes } from "@/constants/route";
+import { configError, configRoutes } from "@/constants/route";
 import AboutPage from "@/pages/About/page";
 import LoginPage from "@/pages/Auth/Login";
 import RegisterPage from "@/pages/Auth/Register";
@@ -21,7 +21,6 @@ import Booking from "@/pages/Customer/Bookings";
 import Profile from "@/pages/Customer/Profile";
 import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
 import CustomerOrders from "@/pages/Customer/Order";
-import StaffDashboard from "@/pages/Staff/Dashboard";
 import OrderManagementStaff from "@/pages/Staff/OrderManagement";
 import OrderManagementDoctor from "@/pages/Doctor/OrderManagement";
 import DoctorDashboard from "@/pages/Doctor/Dashboard";
@@ -32,7 +31,23 @@ import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
 import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
 import Vouchers from "@/pages/Admin/Voucher";
 import Membership from "@/pages/Admin/Membership";
-import ForgotEmailPage from "@/pages/Auth/ForgotEmail";
+// import RecommendationPage from "@/pages/Admin/Recommendation";
+import ForgotPasswordPage from "@/pages/Auth/ForgotPassword";
+import ForbiddenPage from "@/pages/Error/ForbiddenPage";
+import NotFoundPage from "@/pages/Error/NotFound";
+import ResetPasswordPage from "@/pages/Auth/ResetPassword";
+import FeedbackManagementStaff from "@/pages/Staff/Feedback";
+import AdminSpaProfile from "@/pages/Admin/Profile";
+import CasherProfile from "@/pages/Casher/Profile";
+import DoctorProfile from "@/pages/Doctor/Profile";
+import InvoiceCasher from "@/pages/Casher/Invoice";
+import VoucherCustomer from "@/pages/Customer/Voucher";
+import DoctorList from "@/pages/Services/DoctorList";
+import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
+import DataAnalysisDashboard from "@/pages/Admin/DataAnalysisDashboard";
+import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
+import NotificationCustomer from "@/pages/Customer/Notification";
+import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +63,11 @@ const router = createBrowserRouter([
   {
     path: configRoutes.login,
     element: <LoginPage />,
+    // children: [{ index: true, element: <LoginPage /> }],
+  },
+  {
+    path: configRoutes.verified,
+    element: <VerifyEmailPage />,
     // children: [{ index: true, element: <LoginPage /> }],
   },
   {
@@ -226,6 +246,16 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: configRoutes.customerNotifications,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <NotificationCustomer />,
+      },
+    ],
+  },
 
   {
     path: configRoutes.paymentSuccessDeposit,
@@ -248,24 +278,8 @@ const router = createBrowserRouter([
   },
 
   {
-    path: configRoutes.staffDashboard,
-    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
-    children: [
-      {
-        element: <SystemLayoutReposive />,
-        children: [
-          {
-            index: true,
-            element: <StaffDashboard />,
-          },
-        ],
-      },
-    ],
-  },
-
-  {
     path: configRoutes.staffOrders,
-    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff, RoleEnum.Admin]} />,
     children: [
       {
         element: <SystemLayoutReposive />,
@@ -360,8 +374,181 @@ const router = createBrowserRouter([
   },
 
   {
-    path: configRoutes.forgotEmail,
-    element: <ForgotEmailPage />,
+    path: configRoutes.adminDataAnalysis,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DataAnalysisDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffFeedback,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff, RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <FeedbackManagementStaff />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminSpaProfile,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <AdminSpaProfile />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherProfile,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Staff]} />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <CasherProfile />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorProfileManagement,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DoctorProfile />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherInvoice,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <InvoiceCasher />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherStats,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <PaymentStatsPage />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: configRoutes.customerVouchers,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Customer]} />,
+    children: [
+      {
+        element: <HomeLayouts />,
+        children: [
+          {
+            index: true,
+            element: <VoucherCustomer />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctocList,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <DoctorList />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffRequestDoctor,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DoctorCancelRequestManagementStaff />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.forgotPassword,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: configRoutes.resetPassword,
+    element: <ResetPasswordPage />,
+  },
+
+  {
+    path: configError.UnAuthorize,
+    element: <ForbiddenPage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 

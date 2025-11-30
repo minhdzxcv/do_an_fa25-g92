@@ -181,38 +181,94 @@ describe('ServiceService', () => {
                 images: [],
             });
         });
+
+        it('should create a service with doctors', async () => {
+            const createServiceDto: any = {
+                name: 'New Service',
+                price: 200000,
+                description: 'New service description',
+                categoryId: 'category-1',
+                isActive: true,
+                doctorsIds: ['doctor-1', 'doctor-2'],
+            };
+
+            const mockDoctors = [
+                { id: 'doctor-1', full_name: 'Dr. A' },
+                { id: 'doctor-2', full_name: 'Dr. B' },
+            ];
+
+            doctorRepository.findByIds.mockResolvedValue(mockDoctors);
+            serviceRepository.create.mockReturnValue(createServiceDto);
+            serviceRepository.save.mockResolvedValue({
+                ...createServiceDto,
+                id: 'new-service-id',
+                doctors: mockDoctors,
+            });
+
+            const result = await service.createService(createServiceDto, []);
+
+            expect(result).toHaveProperty('doctors');
+            expect(doctorRepository.findByIds).toHaveBeenCalledWith(['doctor-1', 'doctor-2']);
+        });
     });
 
     describe('findAllServices', () => {
-        it('should return all active services', async () => {
+        it('should return all active services with doctors', async () => {
             const services = [mockService];
             serviceRepository.find.mockResolvedValue(services);
 
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([{
+                    id: 'doctor-1',
+                    full_name: 'Dr. John',
+                    avatar: 'avatar.jpg',
+                }]),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
             const result = await service.findAllServices();
 
-            expect(result).toEqual(services);
+            expect(Array.isArray(result)).toBe(true);
+            if (result && result.length > 0) {
+                expect(result[0]).toHaveProperty('doctors');
+            }
             expect(serviceRepository.find).toHaveBeenCalled();
             const callArg = serviceRepository.find.mock.calls[0][0];
             expect(callArg).toHaveProperty('relations');
             expect(callArg.relations).toContain('category');
         });
 
-        it('should return empty array when no services found', async () => {
+        it('should throw NotFoundException when no services found', async () => {
             serviceRepository.find.mockResolvedValue([]);
 
-            const result = await service.findAllServices();
-
-            expect(result).toEqual([]);
+            await expect(service.findAllServices()).rejects.toThrow(NotFoundException);
+            await expect(service.findAllServices()).rejects.toThrow('Không tìm thấy dịch vụ');
         });
     });
 
     describe('findOneService', () => {
-        it('should return a service by id', async () => {
+        it('should return a service by id with doctors', async () => {
             serviceRepository.findOne.mockResolvedValue(mockService);
+
+            const mockQueryBuilder = {
+                innerJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                getMany: jest.fn().mockResolvedValue([{
+                    id: 'doctor-1',
+                    full_name: 'Dr. John',
+                    avatar: 'avatar.jpg',
+                }]),
+            };
+            doctorRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
             const result = await service.findOneService('service-1');
 
-            expect(result).toEqual(mockService);
+            expect(result).toHaveProperty('id');
+            expect(result).toHaveProperty('doctors');
             expect(serviceRepository.findOne).toHaveBeenCalledWith({
                 where: { id: 'service-1' },
                 relations: ['category'],
@@ -528,6 +584,30 @@ describe('ServiceService', () => {
             await expect(service.findDoctorsByService('service-1')).rejects.toThrow(
                 NotFoundException,
             );
+        });
+    });
+
+    describe('findDoctorsWithServices', () => {
+        it('should return all active doctors', async () => {
+            const mockDoctors = [
+                { id: 'doctor-1', full_name: 'Dr. A', isActive: true },
+                { id: 'doctor-2', full_name: 'Dr. B', isActive: true },
+            ];
+
+            doctorRepository.find.mockResolvedValue(mockDoctors);
+
+            const result = await service.findDoctorsWithServices();
+
+            expect(result).toEqual(mockDoctors);
+            expect(doctorRepository.find).toHaveBeenCalled();
+        });
+
+        it('should return empty array when no doctors found', async () => {
+            doctorRepository.find.mockResolvedValue([]);
+
+            const result = await service.findDoctorsWithServices();
+
+            expect(result).toEqual([]);
         });
     });
 

@@ -24,6 +24,7 @@ describe('MembershipService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       save: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -68,6 +69,15 @@ describe('MembershipService', () => {
       expect(membershipRepository.find).toHaveBeenCalledWith({
         order: { minSpent: 'ASC' },
       });
+    });
+
+    it('should return empty array when no memberships exist', async () => {
+      membershipRepository.find.mockResolvedValue([]);
+
+      const result = await service.findAll();
+
+      expect(result).toEqual([]);
+      expect(membershipRepository.find).toHaveBeenCalled();
     });
   });
 
@@ -114,6 +124,28 @@ describe('MembershipService', () => {
       expect(membershipRepository.save).toHaveBeenCalled();
     });
 
+    it('should update multiple fields', async () => {
+      const updateDto: UpdateMembershipDto = {
+        name: 'Premium',
+        discountPercent: 10,
+        minSpent: 10000000,
+        maxSpent: 49999999,
+      };
+
+      membershipRepository.findOne.mockResolvedValue(mockMembership);
+      membershipRepository.save.mockResolvedValue({
+        ...mockMembership,
+        ...updateDto,
+      });
+
+      const result = await service.update('membership-1', updateDto);
+
+      expect(result.name).toBe('Premium');
+      expect(result.discountPercent).toBe(10);
+      expect(result.minSpent).toBe(10000000);
+      expect(result.maxSpent).toBe(49999999);
+    });
+
     it('should throw NotFoundException when membership not found', async () => {
       const updateDto: UpdateMembershipDto = {
         discountPercent: 5,
@@ -124,6 +156,55 @@ describe('MembershipService', () => {
       await expect(service.update('nonexistent-id', updateDto)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('findByCustomer', () => {
+    it('should return membership for a customer', async () => {
+      const mockQueryBuilder = {
+        innerJoin: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockMembership),
+      };
+
+      membershipRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+      const result = await service.findByCustomer('customer-1');
+
+      expect(result).toEqual(mockMembership);
+      expect(membershipRepository.createQueryBuilder).toHaveBeenCalledWith('membership');
+      expect(mockQueryBuilder.innerJoin).toHaveBeenCalledWith(
+        'membership.customers',
+        'customer',
+        'customer.id = :customerId',
+        { customerId: 'customer-1' },
+      );
+      expect(mockQueryBuilder.getOne).toHaveBeenCalled();
+    });
+
+    it('should return null when customer has no membership', async () => {
+      const mockQueryBuilder = {
+        innerJoin: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+
+      membershipRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+      const result = await service.findByCustomer('customer-1');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when customer not found', async () => {
+      const mockQueryBuilder = {
+        innerJoin: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(undefined),
+      };
+
+      membershipRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+      const result = await service.findByCustomer('nonexistent-customer');
+
+      expect(result).toBeNull();
     });
   });
 });

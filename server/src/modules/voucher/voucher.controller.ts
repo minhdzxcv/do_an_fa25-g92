@@ -16,7 +16,7 @@ export class VoucherController {
 
   @Post()
   create(@Body() createVoucherDto: CreateVoucherDto) {
-    return this.voucherService.create(createVoucherDto);
+    return this.voucherService.createForCustomers(createVoucherDto);
   }
 
   @Get()
@@ -37,5 +37,10 @@ export class VoucherController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.voucherService.remove(id);
+  }
+
+  @Get('customers/:customerId')
+  findVouchersByCustomer(@Param('customerId') customerId: string) {
+    return this.voucherService.findVouchersByCustomer(customerId);
   }
 }

@@ -49,6 +49,7 @@ describe('FeedbackService - Unit Test', () => {
         customerId: 'C1',
         serviceId: 'S1',
         rating: 4.5,
+        comment: 'Great service',
       };
 
       const created = { id: 'F1', ...dto, status: FeedbackStatus.Pending };
@@ -63,6 +64,24 @@ describe('FeedbackService - Unit Test', () => {
         status: FeedbackStatus.Pending,
       });
       expect(feedbackRepo.save).toHaveBeenCalled();
+    });
+
+    it('should create feedback without comment', async () => {
+      const dto = {
+        appointmentId: 'A1',
+        customerId: 'C1',
+        serviceId: 'S1',
+        rating: 5,
+      };
+
+      const created = { id: 'F2', ...dto, status: FeedbackStatus.Pending };
+
+      feedbackRepo.create.mockReturnValue(created);
+      feedbackRepo.save.mockResolvedValue(created);
+
+      const result = await service.create(dto);
+      expect(result).toEqual(created);
+      expect(result.status).toBe(FeedbackStatus.Pending);
     });
   });
 
@@ -83,21 +102,26 @@ describe('FeedbackService - Unit Test', () => {
           },
         ]),
       ).rejects.toThrow(NotFoundException);
+      expect(appointmentRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'A1' },
+      });
     });
 
-    it('should create multiple feedbacks', async () => {
+    it('should create multiple feedbacks and mark appointment', async () => {
       const dtoList = [
         {
           appointmentId: 'A1',
           customerId: 'C1',
           serviceId: 'S1',
           rating: 5,
+          comment: 'Excellent',
         },
         {
           appointmentId: 'A1',
           customerId: 'C1',
-          serviceId: 'S1',
+          serviceId: 'S2',
           rating: 4.5,
+          comment: 'Good',
         },
       ];
 
@@ -106,16 +130,25 @@ describe('FeedbackService - Unit Test', () => {
       appointmentRepo.save.mockResolvedValue({ ...appointment, isFeedbackGiven: true });
 
       feedbackRepo.create.mockImplementation((dto) => ({
+        id: `F-${dto.serviceId}`,
         ...dto,
         status: FeedbackStatus.Pending,
       }));
 
-      feedbackRepo.save.mockResolvedValue(dtoList);
+      const savedFeedbacks = [
+        { id: 'F-S1', ...dtoList[0], status: FeedbackStatus.Pending },
+        { id: 'F-S2', ...dtoList[1], status: FeedbackStatus.Pending },
+      ];
+      feedbackRepo.save.mockResolvedValue(savedFeedbacks);
 
       const result = await service.createMany(dtoList);
 
-      expect(result.length).toBe(2);
-      expect(appointmentRepo.save).toHaveBeenCalled();
+      expect(result).toEqual(savedFeedbacks);
+      expect(appointmentRepo.save).toHaveBeenCalledWith({
+        ...appointment,
+        isFeedbackGiven: true,
+      });
+      expect(feedbackRepo.create).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -133,6 +166,13 @@ describe('FeedbackService - Unit Test', () => {
       expect(feedbackRepo.find).toHaveBeenCalledWith({
         relations: ['customer', 'appointmentDetail'],
       });
+    });
+
+    it('should return empty array when no feedbacks', async () => {
+      feedbackRepo.find.mockResolvedValue([]);
+
+      const result = await service.findAll();
+      expect(result).toEqual([]);
     });
   });
 
@@ -160,19 +200,33 @@ describe('FeedbackService - Unit Test', () => {
   // ----------------------------------------------------------
   describe('update()', () => {
     it('should update feedback', async () => {
-      const fb = { id: 'F1', rating: 4 };
+      const fb = { id: 'F1', rating: 4, comment: 'Good' };
+      const updateDto = { rating: 5, comment: 'Excellent' };
 
-      feedbackRepo.update.mockResolvedValue({ affected: 1 });
-      feedbackRepo.findOne.mockResolvedValue({ ...fb, rating: 5 });
+      feedbackRepo.findOne.mockResolvedValue(fb);
+      feedbackRepo.save.mockResolvedValue({ ...fb, ...updateDto });
 
-      const result = await service.update('F1', { rating: 5 });
+      const result = await service.update('F1', updateDto);
       expect(result.rating).toBe(5);
+      expect(result.comment).toBe('Excellent');
+      expect(feedbackRepo.save).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if update fails', async () => {
-      feedbackRepo.update.mockResolvedValue({ affected: 0 });
+    it('should throw NotFoundException if feedback not found', async () => {
+      feedbackRepo.findOne.mockResolvedValue(null);
 
       await expect(service.update('X', { rating: 3 })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should update only status field', async () => {
+      const fb = { id: 'F1', rating: 4, status: FeedbackStatus.Pending };
+      const updateDto = { status: FeedbackStatus.Approved };
+
+      feedbackRepo.findOne.mockResolvedValue(fb);
+      feedbackRepo.save.mockResolvedValue({ ...fb, ...updateDto });
+
+      const result = await service.update('F1', updateDto);
+      expect(result.status).toBe(FeedbackStatus.Approved);
     });
   });
 
@@ -181,13 +235,20 @@ describe('FeedbackService - Unit Test', () => {
   // ----------------------------------------------------------
   describe('remove()', () => {
     it('should remove feedback', async () => {
-      const fb = { id: 'F1' };
+      const fb = { id: 'F1', rating: 5 };
 
       feedbackRepo.findOne.mockResolvedValue(fb);
       feedbackRepo.remove.mockResolvedValue(fb);
 
       const result = await service.remove('F1');
       expect(result).toEqual(fb);
+      expect(feedbackRepo.remove).toHaveBeenCalledWith(fb);
+    });
+
+    it('should throw NotFoundException if feedback not found', async () => {
+      feedbackRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.remove('X')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -196,12 +257,23 @@ describe('FeedbackService - Unit Test', () => {
   // ----------------------------------------------------------
   describe('findByAppointmentDetail()', () => {
     it('should return approved feedbacks for appointment detail', async () => {
-      const list = [{ id: 'F1' }];
+      const list = [{ id: 'F1', status: FeedbackStatus.Approved }];
 
       feedbackRepo.find.mockResolvedValue(list);
 
       const result = await service.findByAppointmentDetail('D1');
       expect(result).toEqual(list);
+      expect(feedbackRepo.find).toHaveBeenCalledWith({
+        where: { id: 'D1', status: FeedbackStatus.Approved },
+        relations: ['customer'],
+      });
+    });
+
+    it('should return empty array when no approved feedbacks', async () => {
+      feedbackRepo.find.mockResolvedValue([]);
+
+      const result = await service.findByAppointmentDetail('D1');
+      expect(result).toEqual([]);
     });
   });
 
@@ -210,11 +282,23 @@ describe('FeedbackService - Unit Test', () => {
   // ----------------------------------------------------------
   describe('findByAppointment()', () => {
     it('should return feedback by appointment', async () => {
-      const list = [{ id: 'F1' }];
+      const list = [{ id: 'F1', rating: 5 }];
       feedbackRepo.find.mockResolvedValue(list);
 
       const result = await service.findByAppointment('A1');
       expect(result).toEqual(list);
+      expect(feedbackRepo.find).toHaveBeenCalledWith({
+        where: { appointmentId: 'A1' },
+        select: ['id', 'rating', 'comment', 'status', 'createdAt', 'service'],
+        relations: ['service'],
+      });
+    });
+
+    it('should return empty array when no feedbacks for appointment', async () => {
+      feedbackRepo.find.mockResolvedValue([]);
+
+      const result = await service.findByAppointment('A1');
+      expect(result).toEqual([]);
     });
   });
 
@@ -223,11 +307,22 @@ describe('FeedbackService - Unit Test', () => {
   // ----------------------------------------------------------
   describe('findByCustomer()', () => {
     it('should return feedback by customer', async () => {
-      const list = [{ id: 'F1' }];
+      const list = [{ id: 'F1', customerId: 'C1' }];
       feedbackRepo.find.mockResolvedValue(list);
 
       const result = await service.findByCustomer('C1');
       expect(result).toEqual(list);
+      expect(feedbackRepo.find).toHaveBeenCalledWith({
+        where: { customerId: 'C1' },
+        relations: ['appointmentDetail'],
+      });
+    });
+
+    it('should return empty array when customer has no feedbacks', async () => {
+      feedbackRepo.find.mockResolvedValue([]);
+
+      const result = await service.findByCustomer('C1');
+      expect(result).toEqual([]);
     });
   });
 
@@ -246,6 +341,13 @@ describe('FeedbackService - Unit Test', () => {
 
       const result = await service.approveFeedback('F1');
       expect(result.status).toBe(FeedbackStatus.Approved);
+      expect(feedbackRepo.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if feedback not found', async () => {
+      feedbackRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.approveFeedback('X')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -264,6 +366,13 @@ describe('FeedbackService - Unit Test', () => {
 
       const result = await service.rejectFeedback('F1');
       expect(result.status).toBe(FeedbackStatus.Rejected);
+      expect(feedbackRepo.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if feedback not found', async () => {
+      feedbackRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.rejectFeedback('X')).rejects.toThrow(NotFoundException);
     });
   });
 });
