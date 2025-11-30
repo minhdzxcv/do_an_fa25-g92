@@ -12,7 +12,7 @@ import {
   UpdateAppointmentDto,
 } from './appointment/appointment.dto';
 import { Service } from '@/entities/service.entity';
-import { AppointmentStatus } from '@/entities/enums/appointment-status';
+import { AppointmentHanle, AppointmentStatus } from '@/entities/enums/appointment-status';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
 import { Internal } from '@/entities/internal.entity';
@@ -89,7 +89,7 @@ export class AppointmentService {
 
   async findAll() {
     const appointments = await this.appointmentRepo.find({
-      relations: ['customer', 'doctor', 'details', 'details.service'],
+      relations: ['customer', 'doctor', 'details', 'details.service', 'voucher'],
       order: { createdAt: 'DESC' },
     });
     return appointments;
@@ -99,6 +99,7 @@ export class AppointmentService {
     return this.appointmentRepo.find({
       where: { doctorId },
       relations: ['customer', 'doctor', 'details', 'details.service'],
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -112,6 +113,7 @@ export class AppointmentService {
         appointment_date: MoreThan(now),
       },
       select: ['id', 'startTime', 'endTime', 'status'],
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -124,13 +126,14 @@ export class AppointmentService {
         appointment_date: MoreThan(now),
       },
       select: ['id', 'startTime', 'endTime', 'status'],
+      order: { createdAt: 'DESC' },
     });
   }
 
   findByCustomer(customerId: string) {
     return this.appointmentRepo.find({
       where: { customerId },
-      relations: ['doctor', 'details', 'details.service', 'customer'],
+      relations: ['customer', 'doctor', 'details', 'details.service', 'voucher'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -467,119 +470,217 @@ export class AppointmentService {
     return { message: 'Đã xoá lịch hẹn' };
   }
 
-  async getDashboard({ year, month }: { year: number; month?: number }) {
-    const isFullYear = !month || month === 0;
+ async getDashboard({ year, month }: { year: number; month?: number }) {
+  const isFullYear = !month || month === 0;
 
-    const startDate = isFullYear
-      ? new Date(year, 0, 1)
-      : new Date(year, month - 1, 1);
+  const startDate = isFullYear
+    ? new Date(year, 0, 1)
+    : new Date(year, month - 1, 1);
 
-    const endDate = isFullYear
-      ? new Date(year, 11, 31, 23, 59, 59)
-      : new Date(year, month, 0, 23, 59, 59);
+  const endDate = isFullYear
+    ? new Date(year + 1, 0, 1) 
+    : new Date(year, month, 1);
 
-    const invoices = await this.invoiceRepo.find({
-      where: {
-        createdAt: Between(startDate, endDate),
-        payment_status: 'paid',
+  const validStatuses = [
+    AppointmentStatus.Confirmed,
+    AppointmentStatus.Deposited,
+    AppointmentStatus.Approved,
+    AppointmentStatus.Paid,
+    AppointmentStatus.Completed,
+    AppointmentStatus.Overdue,
+  ];
+
+  const appointments = await this.appointmentRepo.find({
+    where: {
+      createdAt: Between(startDate, endDate),
+      status: In(validStatuses),
+    },
+    relations: ['customer', 'details', 'details.service'],
+    select: {
+      id: true,
+      totalAmount: true,
+      depositAmount: true,
+      status: true,
+      customer: { id: true, full_name: true },
+      details: {
+        quantity: true,
+        service: { id: true, name: true },
       },
-      relations: ['customer', 'details', 'details.service'],
-    });
+    },
+  });
 
-    const services = await this.serviceRepo.find({
-      where: { isActive: true, createdAt: Between(startDate, endDate) },
-    });
 
-    const totalInvoices = invoices.length;
-    const totalAmount = invoices.reduce(
-      (acc, i) => acc + Number(i.finalAmount),
-      0,
-    );
 
-    const customerIds = new Set(invoices.map((i) => i.customer.id));
-    const totalCustomers = customerIds.size;
 
-    const serviceMap = new Map<string, number>();
-    invoices.forEach((inv) => {
-      inv.details.forEach((item) => {
+  let expectedRevenue = 0;    
+  let actualRevenue = 0;     
+  let totalDeposited = 0;    
+  let completedAppointments = 0;
+
+  const serviceMap = new Map<string, number>();
+  const customerMap = new Map<string, number>();
+  const customerIds = new Set<string>();
+
+  appointments.forEach((appt) => {
+    const total = Number(appt.totalAmount || 0);
+    const deposit = Number(appt.depositAmount || 0);
+
+    // Doanh thu dự kiến
+    expectedRevenue += total;
+
+    // Doanh thu thực nhận
+    if ([AppointmentStatus.Paid, AppointmentStatus.Completed].includes(appt.status)) {
+      actualRevenue += total;
+      completedAppointments++;
+    } else {
+      actualRevenue += deposit;
+    }
+
+    totalDeposited += deposit;
+
+    // Top dịch vụ
+    appt.details?.forEach((item) => {
+      if (item.service?.name) {
         const prev = serviceMap.get(item.service.name) || 0;
         serviceMap.set(item.service.name, prev + item.quantity);
-      });
+      }
     });
 
-    const topServices = Array.from(serviceMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+    // Top khách hàng (theo số đơn)
+    const name = appt.customer?.full_name || 'Khách lẻ';
+    customerMap.set(name, (customerMap.get(name) || 0) + 1);
 
-    const customerMap = new Map<string, number>();
-    invoices.forEach((inv) => {
-      const prev = customerMap.get(inv.customer.full_name) || 0;
-      customerMap.set(inv.customer.full_name, prev + 1);
-    });
+    // Đếm khách duy nhất
+    if (appt.customer?.id) {
+      customerIds.add(appt.customer.id);
+    }
+  });
 
-    const topCustomers = Array.from(customerMap.entries())
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 5);
+  const totalAppointments = appointments.length;
+  const completionRate = totalAppointments > 0 
+    ? Number(((completedAppointments / totalAppointments) * 100).toFixed(1)) 
+    : 0;
 
-    return {
-      totalCustomers,
-      totalAmount,
-      totalInvoices,
-      totalServices: services.length,
-      topServices,
-      topCustomers,
-      invoices,
-    };
-  }
+  const topServices = Array.from(serviceMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const topCustomers = Array.from(customerMap.entries())
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+
+  // === TRẢ VỀ GIỐNG HỆT CŨ + THÊM THÊM MỚI ===
+  return {
+    totalInvoices: totalAppointments,           // Đổi tên logic: giờ là tổng đơn đặt lịch
+    totalAmount: actualRevenue,                  // Doanh thu thực nhận (như cũ là tiền đã vào tay)
+    totalCustomers: customerIds.size,
+    totalServices: appointments.flatMap(a => a.details || []).length, // tổng dịch vụ đã đặt (nếu cần)
+
+    expectedRevenue,         // MỚI: doanh thu dự kiến
+    actualRevenue,           // Đã có ở trên, nhưng để rõ ràng
+    totalDeposited,           // MỚI: tổng tiền đặt cọc đã nhận
+    totalAppointments,       // MỚI: tổng số đơn đặt
+    completedAppointments,   // MỚI: số đơn đã thanh toán đủ
+    completionRate,          // MỚI: tỷ lệ hoàn thành (%)
+
+    topServices,
+    topCustomers,
+
+    invoices: appointments,
+  };
+}
 
   async requestCancelByDoctorBulk(
-    appointmentIds: string[],
-    doctorId: string,
-    reason: string,
-  ) {
-    if (!appointmentIds.length) {
-      throw new BadRequestException('Chưa chọn lịch hẹn nào');
-    }
-
-    const results: { appointmentId: string; status: string }[] = [];
-
-    for (const id of appointmentIds) {
-      const appointment = await this.appointmentRepo.findOne({ where: { id } });
-
-      if (!appointment) {
-        results.push({ appointmentId: id, status: 'Không tìm thấy lịch hẹn' });
-        continue;
-      }
-
-      if (appointment.doctorId !== doctorId) {
-        results.push({ appointmentId: id, status: 'Không có quyền hủy' });
-        continue;
-      }
-
-      const existing = await this.cancelRepo.findOne({
-        where: { appointmentId: id, doctorId, status: 'pending' },
-      });
-
-      if (existing) {
-        results.push({ appointmentId: id, status: 'Đã gửi yêu cầu trước đó' });
-        continue;
-      }
-
-      const request = this.cancelRepo.create({
-        appointmentId: id,
-        doctorId,
-        reason,
-        status: 'pending',
-      });
-
-      await this.cancelRepo.save(request);
-      results.push({ appointmentId: id, status: 'Gửi yêu cầu thành công' });
-    }
-
-    return results;
+  appointmentIds: string[],
+  doctorId: string,
+  reason: string,
+) {
+  if (!appointmentIds.length) {
+    throw new BadRequestException('Chưa chọn lịch hẹn nào');
   }
+
+  const results: { appointmentId: string; status: string }[] = [];
+
+  const staffUsers = await this.internalRepo.find({
+    where: {
+      role: { name: 'staff' }, 
+      isActive: true,
+    },
+    select: ['id', 'full_name', 'email'],
+    relations: ['role'], 
+  });
+
+  if (staffUsers.length === 0) {
+    console.warn('Không có staff nào trong hệ thống để gửi thông báo hủy lịch');
+  }
+
+  for (const id of appointmentIds) {
+    const appointment = await this.appointmentRepo.findOne({
+      where: { id },
+      relations: ['customer', 'doctor'], 
+    });
+
+    if (!appointment) {
+      results.push({ appointmentId: id, status: 'Không tìm thấy lịch hẹn' });
+      continue;
+    }
+
+    if (appointment.doctorId !== doctorId) {
+      results.push({ appointmentId: id, status: 'Không có quyền hủy' });
+      continue;
+    }
+
+    const existing = await this.cancelRepo.findOne({
+      where: { appointmentId: id, doctorId, status: 'pending' },
+    });
+
+    if (existing) {
+      results.push({ appointmentId: id, status: 'Đã gửi yêu cầu trước đó' });
+      continue;
+    }
+
+    const request = this.cancelRepo.create({
+      appointmentId: id,
+      doctorId,
+      reason,
+      status: 'pending',
+    });
+
+    await this.cancelRepo.save(request);
+
+    await this.appointmentRepo.update(id, {
+      statusHanle: AppointmentHanle.Pending, 
+    });
+
+    if (staffUsers.length > 0) {
+      const customerName = appointment.customer?.full_name || 'Khách lẻ';
+      const doctorName = appointment.doctor?.full_name || 'Bác sĩ';
+
+      const notificationPromises = staffUsers.map((staff) =>
+        this.notificationService.create({
+          title: 'Yêu cầu hủy lịch hẹn từ bác sĩ',
+          content: `Bác sĩ ${doctorName} yêu cầu hủy lịch hẹn của khách ${customerName} (Mã: #${id.slice(-8).toUpperCase()}). Lý do: ${reason}`,
+          type: NotificationType.Warning,
+          userId: staff.id,
+          userType: 'internal',
+          actionUrl: ``, 
+          relatedId: request.id, 
+          relatedType: 'cancel_request',
+        }),
+      );
+
+      Promise.allSettled(notificationPromises).catch((err) =>
+        console.error('Lỗi khi gửi thông báo cho staff:', err),
+      );
+    }
+
+    results.push({ appointmentId: id, status: 'Gửi yêu cầu thành công' });
+  }
+
+  return results;
+}
 
   async approveRequest(id: string) {
     const req = await this.cancelRepo.findOne({ where: { id } });
@@ -592,6 +693,7 @@ export class AppointmentService {
       status: AppointmentStatus.Cancelled,
       cancelledAt: new Date(),
       cancelReason: `${req.reason} (Hủy bởi hệ thống sau khi bác sĩ duyệt)`,
+      statusHanle: AppointmentHanle.Approved,
     });
 
     const appointment = await this.findOne(req.appointmentId);
@@ -624,6 +726,19 @@ export class AppointmentService {
       console.log(error)
     }
 
+    if (appointment.doctorId) {
+        await this.notificationService.create({
+          title: 'Yêu cầu hủy lịch đã được duyệt',
+          content: `Yêu cầu hủy lịch hẹn của khách ${appointment.customer?.full_name || 'Khách lẻ'} (Mã: #${appointment.id.slice(-8).toUpperCase()}) đã được nhân viên duyệt thành công.`,
+          type: NotificationType.Success,
+          userId: appointment.doctorId,
+          userType: 'doctor',
+          actionUrl: '/doctor/orders',
+          relatedId: appointment.id,
+          relatedType: 'appointment',
+        });
+    }
+
     // await this.historyRepo.save({
     //   appointmentId: req.appointmentId,
     //   status: AppointmentStatus.Cancelled,
@@ -635,13 +750,67 @@ export class AppointmentService {
 
   async rejectRequest(id: string) {
     const req = await this.cancelRepo.findOne({ where: { id } });
-    if (!req) throw new NotFoundException('Không tìm thấy request');
+      if (!req) throw new NotFoundException('Không tìm thấy request');
 
-    req.status = 'rejected';
-    await this.cancelRepo.save(req);
+      req.status = 'rejected';
+      await this.cancelRepo.save(req);
 
+      await this.appointmentRepo.update(req.appointmentId, {
+      statusHanle: AppointmentHanle.Rejected, 
+    });
+
+  const appointment = await this.findOne(req.appointmentId);
+
+  if (appointment.doctorId) {
+    await this.notificationService.create({
+      title: 'Yêu cầu hủy lịch bị từ chối',
+      content: `Yêu cầu hủy lịch hẹn của khách ${appointment.customer?.full_name || 'Khách lẻ'} (Mã: #${appointment.id.slice(-8).toUpperCase()}) đã bị từ chối. Vui lòng thực hiện đúng lịch hoặc liên hệ quản lý.`,
+      type: NotificationType.Error,
+      userId: appointment.doctorId,
+      userType: 'doctor',
+      actionUrl: '/doctor/orders',
+      relatedId: appointment.id,
+      relatedType: 'appointment',
+    });
+  }
     return { message: 'Đã từ chối yêu cầu.' };
   }
+
+  async requestCompleteByStaff(appointmentId: string,  staffName: string) {
+  const appointment = await this.appointmentRepo.findOne({
+    where: { id: appointmentId },
+    relations: ['doctor', 'customer'],
+  });
+
+  if (!appointment) {
+    throw new NotFoundException('Không tìm thấy lịch hẹn');
+  }
+
+  if (!appointment.doctorId) {
+    throw new BadRequestException('Lịch hẹn chưa được phân bác sĩ');
+  }
+
+  appointment.reminderDoctor = 'Hãy hoàn thành đơn hàng này. Yêu cầu bởi nhân viên';
+
+  await this.appointmentRepo.save(appointment);
+
+  await this.notificationService.create({
+    title: 'Yêu cầu hoàn thành dịch vụ',
+    content: `${staffName} đang yêu cầu bạn hoàn thành dịch vụ cho khách hàng ${appointment.customer?.full_name || 'khách lẻ'} (Mã đơn: #${appointment.id.slice(-8).toUpperCase()})`,
+    type: NotificationType.Info,
+    userId: appointment.doctorId,
+    userType: 'doctor',
+    actionUrl: `/doctor/orders/${appointment.id}`,
+    relatedId: appointment.id,
+    relatedType: 'appointment',
+  });
+
+  return {
+    success: true,
+    message: 'Đã gửi yêu cầu hoàn thành đến bác sĩ',
+    appointmentId: appointment.id,
+  };
+}
 
   async findAllPending() {
     return this.cancelRepo.find({

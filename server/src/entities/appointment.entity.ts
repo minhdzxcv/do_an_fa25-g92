@@ -15,7 +15,7 @@ import { AppointmentDetail } from './appointmentDetails.entity';
 import { Voucher } from './voucher.entity';
 import { AppointmentHistory } from './appointmentHistory.entity';
 import { Internal } from './internal.entity';
-import { AppointmentStatus } from './enums/appointment-status';
+import { AppointmentHanle, AppointmentStatus } from './enums/appointment-status';
 
 @Entity()
 export class Appointment {
@@ -52,6 +52,12 @@ export class Appointment {
     default: AppointmentStatus.Pending,
   })
   status: AppointmentStatus;
+
+  @Column({
+    type: 'enum',
+    enum: AppointmentHanle
+  })
+  statusHanle?: AppointmentHanle;
 
   @OneToMany(() => AppointmentDetail, (detail) => detail.appointment, {
     cascade: true,
@@ -112,4 +118,7 @@ export class Appointment {
 
   @Column({ type: 'boolean', default: false })
   isFeedbackGiven: boolean;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  reminderDoctor?: string;
 }

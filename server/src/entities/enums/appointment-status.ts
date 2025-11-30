@@ -7,4 +7,12 @@ export enum AppointmentStatus {
   Paid = 'paid',
   Completed = 'completed',
   Cancelled = 'cancelled',
+  Overdue = 'overdue',
+}
+
+
+export enum AppointmentHanle {
+  Approved = 'approved',
+  Rejected = 'rejected',
+  Pending = 'pending',
 }
