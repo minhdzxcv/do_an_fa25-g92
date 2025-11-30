@@ -65,7 +65,4 @@ export class Feedback {
   @ManyToOne(() => AppointmentDetail, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'appointmentDetailId' })
   appointmentDetail: AppointmentDetail;
-
-  @Column({ nullable: true })
-  appointmentDetailId?: string;
 }

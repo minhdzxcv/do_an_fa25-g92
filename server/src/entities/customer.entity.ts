@@ -15,9 +15,8 @@ import { Appointment } from './appointment.entity';
 import { Invoice } from './invoice.entity';
 import { CustomerVoucher } from './customerVoucher.entity';
 import { Membership } from './membership.entity';
-
-import { CustomerType } from './enums/customer-type.enum';
 import { Gender } from './enums/gender.enum';
+import { CustomerType } from './enums/customer-type.enum';
 @Entity()
 export class Customer {
   @PrimaryGeneratedColumn('uuid')
