@@ -339,7 +339,7 @@ const ServicesComp = () => {
         }}
         footer={[
           <Button key="skip" onClick={handleSkipDoctor} loading={isAdding}>
-            Tiếp tục (Không chọn bác sĩ)
+            Tiếp tục không chọn bác sĩ
           </Button>,
           <Button
             key="confirm"
