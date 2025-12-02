@@ -1,19 +1,20 @@
 import "@/assets/css/style.css";
 import { configRoutes } from "@/constants/route";
 import { GiHamburgerMenu } from "react-icons/gi";
-import { BellOutlined, DownOutlined } from "@ant-design/icons";
+import { BellOutlined, DownOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/img/Logo/mainLogo.png";
 import styles from "./Header.module.scss";
 import classNames from "classnames/bind";
 import { Avatar, Dropdown, Badge, Space, Tag, Button, Divider } from "antd";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { showError } from "@/libs/toast";
 import dayjs from "dayjs";
 import {
   useGetUnreadNotificationsByUserQuery,
   type NotificationProps
 } from "@/services/auth";
+import { useGetCartMutation } from "@/services/cart";
 import { useAuthStore } from "@/hooks/UseAuth";
 
 const cx = classNames.bind(styles);
@@ -24,6 +25,8 @@ const Header = () => {
   const { isCustomer, logout, auth, isLoggedIn } = useAuthStore();
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [getCart] = useGetCartMutation();
 
   const {
     data: unreadData,
@@ -48,6 +51,28 @@ const Header = () => {
     };
   }, [auth.accountId, refetchUnread]);
 
+  // Lấy số lượng items trong giỏ hàng
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (auth.accountId && isCustomer) {
+        try {
+          const cartData = await getCart(auth.accountId).unwrap();
+          const totalItems = cartData.items?.length || 0;
+          setCartItemCount(totalItems);
+        } catch (error) {
+          console.error("Lỗi khi lấy giỏ hàng:", error);
+          setCartItemCount(0);
+        }
+      }
+    };
+
+    fetchCartCount();
+    // Refresh cart count every 10 seconds
+    const cartInterval = setInterval(fetchCartCount, 10000);
+
+    return () => clearInterval(cartInterval);
+  }, [auth.accountId, isCustomer, getCart]);
+
   useEffect(() => {
     if (notificationsError) {
       showError(
@@ -63,7 +88,7 @@ const Header = () => {
 
   const dropdownItems = [
     { key: "1", label: "Trang cá nhân", onClick: () => navigate(configRoutes.profile) },
-    { key: "2", label: "Giỏ hàng", onClick: () => navigate(configRoutes.cart) },
+    { key: "2", label: "Giỏ dịch vụ", onClick: () => navigate(configRoutes.cart) },
     { key: "3", label: "Lịch đặt của tôi", onClick: () => navigate(configRoutes.customerOrders) },
     { key: "4", label: "Voucher của tôi", onClick: () => navigate(configRoutes.customerVouchers) },
     { key: "5", label: "Đăng xuất", onClick: logout },
@@ -261,7 +286,19 @@ const Header = () => {
               <div className="d-flex align-items-center flex-nowrap pt-xl-0">
 
                 {isLoggedIn && isCustomer && (
-                  <div className="d-flex align-items-center me-3">
+                  <div className="d-flex align-items-center gap-2">
+                    {/* Icon Giỏ dịch vụ */}
+                    <Badge count={cartItemCount} offset={[-10, 10]} size="small">
+                      <Button
+                        type="text"
+                        icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
+                        shape="circle"
+                        size="large"
+                        onClick={() => navigate(configRoutes.cart)}
+                      />
+                    </Badge>
+
+                    {/* Icon Thông báo */}
                     <Dropdown
                       overlay={notificationOverlay}
                       trigger={["click"]}
