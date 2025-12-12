@@ -9,11 +9,12 @@ import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { Service } from '@/entities/service.entity';
+import { Category } from '@/entities/category.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Customer, Internal, Role, Doctor, Service]),
+    TypeOrmModule.forFeature([Customer, Internal, Role, Doctor, Service, Category]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

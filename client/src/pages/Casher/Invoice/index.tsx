@@ -195,7 +195,7 @@ export default function InvoiceCasher() {
             src={record.customer?.avatar ?? NoAvatarImage}
             alt="avatar"
             fallback={NoAvatarImage}
-            size={40}
+            size ={40}
           />
           <div>
             <div className="font-semibold">{record.customer?.full_name}</div>
