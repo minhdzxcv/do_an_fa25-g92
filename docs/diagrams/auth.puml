@@ -1,0 +1,85 @@
+@startuml
+title Authentication sequence (Register, Login, Refresh)
+
+actor User
+participant "Client (Browser/Mobile)" as Client
+participant "AuthController\nmodules/auth/auth.controller.ts" as Controller
+participant "AuthService\nmodules/auth/auth.service.ts" as Service
+participant "UserRepository\ndb/entities/customer.entity.ts" as UserRepo
+participant "TokenService\nmodules/auth / common utils" as TokenService
+participant "MailService\nmodules/mail" as Mail
+database "Database" as DB
+
+== Register ==
+Client -> Controller: POST /auth/register {email, password, ...}
+activate Controller
+Controller -> Service: register(payload)
+activate Service
+Service -> UserRepo: findByEmail(email)
+activate UserRepo
+UserRepo -> DB: SELECT * FROM users WHERE email = ?
+DB --> UserRepo: row?
+deactivate UserRepo
+alt user exists
+  Service --> Controller: 409 Conflict (email exists)
+else
+  Service -> UserRepo: createUser(payload)
+  activate UserRepo
+  UserRepo -> DB: INSERT INTO users (...)
+  DB --> UserRepo: insertedUser
+  deactivate UserRepo
+  Service -> Mail: sendVerification(email, token)
+  activate Mail
+  Mail -> Mail: send email
+  deactivate Mail
+  Service --> Controller: 201 Created (user id)
+end
+deactivate Service
+Controller --> Client: 201 Created / error
+deactivate Controller
+
+== Login ==
+Client -> Controller: POST /auth/login {email, password}
+activate Controller
+Controller -> Service: login(payload)
+activate Service
+Service -> UserRepo: findByEmail(email)
+activate UserRepo
+UserRepo -> DB: SELECT user
+DB --> UserRepo: user row
+deactivate UserRepo
+Service -> Service: comparePassword(hash)
+alt invalid credentials
+  Service --> Controller: 401 Unauthorized
+else valid
+  Service -> TokenService: generateAccessToken(user)
+  Service -> TokenService: generateRefreshToken(user)
+  TokenService --> Service: accessToken, refreshToken
+  Service -> UserRepo: saveRefreshToken(userId, refreshToken)
+  Service --> Controller: 200 OK {accessToken, refreshToken}
+end
+deactivate Service
+Controller --> Client: 200 OK / 401
+deactivate Controller
+
+== Refresh Token ==
+Client -> Controller: POST /auth/refresh {refreshToken}
+activate Controller
+Controller -> Service: refresh(refreshToken)
+activate Service
+Service -> TokenService: verifyRefreshToken(refreshToken)
+alt invalid/expired
+  Service --> Controller: 401 Unauthorized
+else valid
+  TokenService --> Service: user
+  Service -> TokenService: generateAccessToken(user)
+  Service -> TokenService: generateRefreshToken(user)
+  TokenService --> Service: new tokens
+  Service -> UserRepo: updateRefreshToken(userId, newRefreshToken)
+  Service --> Controller: 200 {accessToken, refreshToken}
+end
+deactivate Service
+Controller --> Client: 200 / 401
+deactivate Controller
+
+@enduml
