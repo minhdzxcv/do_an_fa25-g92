@@ -2,7 +2,6 @@ import {
   Card,
   Col,
   DatePicker,
-  Input,
   Row,
   Space,
   Table,
@@ -13,6 +12,8 @@ import {
   Tag,
   Typography,
   List,
+  Input,
+  Empty,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -28,6 +29,12 @@ const { Title, Text } = Typography;
 
 export default function HistoryOrderManagementDoctor() {
   const [isLoading, setIsLoading] = useState(false);
+
+  // Dữ liệu gốc lấy từ API (luôn giữ nguyên, không lọc ở đây)
+  const [rawAppointments, setRawAppointments] = useState<
+    AppointmentTableProps[]
+  >([]);
+  // Dữ liệu hiển thị trong bảng (chỉ có khi đã search)
   const [appointments, setAppointments] = useState<AppointmentTableProps[]>([]);
 
   const [search, setSearch] = useState("");
@@ -35,6 +42,9 @@ export default function HistoryOrderManagementDoctor() {
     null
   );
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
+
+  // Đánh dấu đã thực hiện tìm kiếm ít nhất 1 lần chưa
+  const [hasSearched, setHasSearched] = useState(false);
 
   const [getAppointmentsForManagement] =
     useGetAppointmentsManagedByDoctorMutation();
@@ -45,6 +55,7 @@ export default function HistoryOrderManagementDoctor() {
 
   const { auth } = useAuthStore();
 
+  // Lấy toàn bộ lịch sử (chỉ Completed) từ API 1 lần duy nhất
   const handleGetAppointments = async () => {
     if (!auth?.accountId) return;
 
@@ -54,50 +65,78 @@ export default function HistoryOrderManagementDoctor() {
         doctorId: auth.accountId,
       }).unwrap();
 
-      const tempRes = res ?? [];
-
-      const completedAppointments = tempRes.filter(
+      const tempRes = (res ?? []).filter(
         (appointment: any) =>
-          appointment.status === appointmentStatusEnum.Completed
+          appointment.status === appointmentStatusEnum.Completed ||
+          appointment.status === appointmentStatusEnum.Paid
       );
 
-      setAppointments(
-        completedAppointments.map((appointment: any) => ({
-          ...appointment,
-          onViewDetails: () => {
-            setSelectedDetailAppointment(appointment);
-            setDetailModalVisible(true);
-          },
-        }))
-      );
+      const mapped = tempRes.map((appointment: any) => ({
+        ...appointment,
+        onViewDetails: () => {
+          setSelectedDetailAppointment(appointment);
+          setDetailModalVisible(true);
+        },
+      }));
+
+      // Chỉ lưu vào raw, chưa hiển thị
+      setRawAppointments(mapped);
+      // Nếu chưa từng search → bảng vẫn trống
+      if (!hasSearched) {
+        setAppointments([]);
+      }
     } catch (error) {
       console.error("Lỗi lấy lịch sử:", error);
+      setRawAppointments([]);
       setAppointments([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Gọi API khi auth thay đổi
   useEffect(() => {
     handleGetAppointments();
   }, [auth]);
 
-  const filteredAppointments = appointments.filter((a) => {
-    const matchSearch =
-      search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
-      a.customer.phone?.toLowerCase().includes(search.toLowerCase());
+  // Hàm thực hiện lọc + hiển thị kết quả
+  const performSearch = () => {
+    setHasSearched(true);
 
-    const matchStatus = !statusFilter || statusFilter.includes(a.status);
+    const filtered = rawAppointments.filter((a) => {
+      const matchSearch =
+        search === "" ||
+        a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+        a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+        a.customer.phone?.toLowerCase().includes(search.toLowerCase());
 
-    const matchDate =
-      !dateRange ||
-      (dayjs(a.appointment_date).isSameOrAfter(dateRange[0], "day") &&
-        dayjs(a.appointment_date).isSameOrBefore(dateRange[1], "day"));
+      const matchStatus =
+        !statusFilter ||
+        statusFilter.length === 0 ||
+        statusFilter.includes(a.status);
 
-    return matchSearch && matchStatus && matchDate;
-  });
+      const matchDate =
+        !dateRange ||
+        (dayjs(a.appointment_date).isSameOrAfter(dateRange[0], "day") &&
+          dayjs(a.appointment_date).isSameOrBefore(dateRange[1], "day"));
+
+      return matchSearch && matchStatus && matchDate;
+    });
+
+    setAppointments(filtered);
+  };
+
+  // Khi bất kỳ filter nào thay đổi → tự động search
+  useEffect(() => {
+    if (
+      hasSearched ||
+      search ||
+      dateRange ||
+      (statusFilter && statusFilter.length > 0)
+    ) {
+      performSearch();
+    }
+  }, [search, dateRange, statusFilter, rawAppointments]);
 
   return (
     <>
@@ -118,17 +157,20 @@ export default function HistoryOrderManagementDoctor() {
           <Col>
             <Space>
               <Input.Search
-                placeholder="Tìm theo tên khách hàng..."
+                placeholder="Tìm theo tên, email, số điện thoại..."
                 allowClear
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: 250 }}
+                onSearch={() => setHasSearched(true)} // nhấn Enter hoặc nút search
+                style={{ width: 300 }}
               />
               <RangePicker
-                onChange={(val) =>
-                  setDateRange(val as [dayjs.Dayjs, dayjs.Dayjs] | null)
-                }
+                onChange={(val) => {
+                  setDateRange(val as [dayjs.Dayjs, dayjs.Dayjs] | null);
+                  if (val) setHasSearched(true);
+                }}
                 format="DD/MM/YYYY"
+                placeholder={["Từ ngày", "Đến ngày"]}
               />
             </Space>
           </Col>
@@ -140,13 +182,13 @@ export default function HistoryOrderManagementDoctor() {
                 allowClear
                 placeholder="Chọn trạng thái"
                 value={statusFilter ?? undefined}
-                onChange={setStatusFilter}
+                onChange={(val) => {
+                  setStatusFilter(val);
+                  if (val && val.length > 0) setHasSearched(true);
+                }}
                 style={{ width: 300 }}
                 options={[
-                  {
-                    label: "Đã thanh toán",
-                    value: appointmentStatusEnum.Paid,
-                  },
+                  { label: "Đã thanh toán", value: appointmentStatusEnum.Paid },
                   {
                     label: "Hoàn thành",
                     value: appointmentStatusEnum.Completed,
@@ -161,20 +203,31 @@ export default function HistoryOrderManagementDoctor() {
           loading={isLoading}
           rowKey="id"
           columns={AppointmentColumn()}
-          dataSource={filteredAppointments}
-          scroll={{ x: "max-content" }}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-            position: ["bottomRight"],
-            showTotal: (total, range) =>
-              `Hiển thị ${range[0]}-${range[1]} trong ${total} lịch hẹn`,
+          dataSource={appointments}
+          locale={{
+            emptyText: hasSearched ? (
+              <Empty description="Không tìm thấy lịch sử nào phù hợp" />
+            ) : (
+              <Empty description="Vui lòng thực hiện tìm kiếm để xem lịch sử khám bệnh" />
+            ),
           }}
+          scroll={{ x: "max-content" }}
+          pagination={
+            appointments.length > 0
+              ? {
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["10", "20", "50"],
+                  position: ["bottomRight"],
+                  showTotal: (total, range) =>
+                    `Hiển thị ${range[0]}-${range[1]} trong ${total} lịch hẹn`,
+                }
+              : false
+          }
         />
       </Card>
 
-      {/* Details Modal */}
+      {/* Details Modal - giữ nguyên */}
       <Modal
         title="Chi tiết lịch hẹn"
         open={detailModalVisible}
