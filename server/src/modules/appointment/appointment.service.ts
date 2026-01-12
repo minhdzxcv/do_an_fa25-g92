@@ -26,6 +26,7 @@ import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
 import { NotificationType } from '@/entities/enums/notification-type.enum';
 import { NotificationService } from '../notification/notification.service';
 import { VoucherService } from '../voucher/voucher.service';
+import { AppointmentRefund, RefundStatus } from '@entities/appointmentRefund.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -62,6 +63,9 @@ export class AppointmentService {
     private readonly invoiceRepo: Repository<Invoice>,
     @InjectRepository(InvoiceDetail)
     private readonly invoiceDetailRepo: Repository<InvoiceDetail>,
+
+    @InjectRepository(AppointmentRefund)
+    private readonly refundRepo: Repository<AppointmentRefund>,
 
     @InjectRepository(DoctorCancelRequest)
     private readonly cancelRepo: Repository<DoctorCancelRequest>,
@@ -253,75 +257,75 @@ export class AppointmentService {
   }
 
   async update(id: string, dto: UpdateAppointmentDto) {
-    const original = await this.appointmentRepo.findOne({
+  const original = await this.appointmentRepo.findOne({
+    where: { id },
+  });
+
+  if (!original) {
+    throw new NotFoundException('Lịch hẹn không tồn tại');
+  }
+
+  return await this.dataSource.transaction(async (manager) => {
+    const appointmentRepo = manager.getRepository(Appointment);
+    const detailRepo = manager.getRepository(AppointmentDetail);
+    const serviceRepo = manager.getRepository(Service);
+
+    const managedAppointment = await appointmentRepo.findOne({
       where: { id },
-      relations: ['details'],
     });
 
-    if (!original) {
-      throw new NotFoundException('Lịch hẹn không tồn tại');
+    if (!managedAppointment) {
+      throw new NotFoundException('Lịch hẹn không tồn tại (transaction)');
     }
 
-    // if (original.status !== AppointmentStatus.Pending) {
-    //   throw new BadRequestException('Không thể cập nhật lịch hẹn đã xác nhận');
-    // }
+    // 1️⃣ Xoá toàn bộ detail cũ
+    await detailRepo.delete({ appointment: { id } });
 
-    Object.assign(original, dto);
+    let totalAmount = 0;
 
-    return await this.dataSource.transaction(async (manager) => {
-      const appointmentRepo = manager.getRepository(Appointment);
-      const detailRepo = manager.getRepository(AppointmentDetail);
-      const serviceRepo = manager.getRepository(Service);
+    // 2️⃣ Tạo lại detail + tính tổng
+    if (dto.details?.length) {
+      const newDetails: AppointmentDetail[] = [];
 
-      const managedAppointment = await appointmentRepo.findOne({
-        where: { id },
-      });
-      if (!managedAppointment) {
-        throw new NotFoundException('Lịch hẹn không tồn tại (transaction)');
-      }
+      for (const d of dto.details) {
+        const service = await serviceRepo.findOne({
+          where: { id: d.serviceId },
+        });
 
-      await detailRepo
-        .createQueryBuilder()
-        .delete()
-        .from(AppointmentDetail)
-        .where('appointmentId = :id', { id })
-        .execute();
-
-      if (dto.details && dto.details.length) {
-        const newDetails: AppointmentDetail[] = [];
-        for (const d of dto.details) {
-          const service = await serviceRepo.findOne({
-            where: { id: d.serviceId },
-          });
-          if (!service) {
-            throw new BadRequestException(
-              `Dịch vụ với ID ${d.serviceId} không tồn tại`,
-            );
-          }
-
-          const price = d.price ?? service.price ?? 0;
-
-          const detail = detailRepo.create({
-            ...d,
-            price,
-            service,
-            appointment: managedAppointment,
-          });
-          newDetails.push(detail);
+        if (!service) {
+          throw new BadRequestException(
+            `Dịch vụ với ID ${d.serviceId} không tồn tại`,
+          );
         }
 
-        await detailRepo.save(newDetails);
+        const price = d.price ?? service.price ?? 0;
+        const quantity =  1;
+
+        totalAmount += price * quantity;
+
+        const detail = detailRepo.create({
+          ...d,
+          price,
+          service,
+          appointment: managedAppointment,
+        });
+
+        newDetails.push(detail);
       }
 
-      Object.assign(managedAppointment, {
-        ...dto,
-        details: undefined,
-        totalAmount: dto.totalAmount,
-      });
+      await detailRepo.save(newDetails);
+    }
 
-      return await appointmentRepo.save(managedAppointment);
+    Object.assign(managedAppointment, {
+      ...dto,
+      details: undefined,
+      totalAmount,
     });
-  }
+
+    return await appointmentRepo.save(managedAppointment);
+  });
+}
+
 
   async reschedule(id: string, newDate: Date) {
     const appointment = await this.findOne(id);
@@ -331,18 +335,19 @@ export class AppointmentService {
   }
 
   async confirmAppointment(id: string, staffId: string) {
-    const appointment = await this.findOne(id);
-    appointment.status = AppointmentStatus.Confirmed;
-    const staff = await this.internalRepo.findOne({ where: { id: staffId } });
+    try {
+      const appointment = await this.findOne(id);
+      const staff = await this.internalRepo.findOne({ where: { id: staffId } });
 
-    appointment.staff = staff as Internal;
-    appointment.staffId = staffId;
+      if (!staff) {
+        throw new NotFoundException('Nhân viên không tồn tại');
+      }
 
-    if (!staff) {
-      throw new NotFoundException('Nhân viên không tồn tại');
-    }
+      appointment.status = AppointmentStatus.Confirmed;
+      appointment.staff = staff;
+      appointment.staffId = staffId;
 
-    const spa = await this.getSpa();
+      const spa = await this.getSpa();
 
     const services = appointment.details.map((d) => ({
       name: d.service.name,
@@ -372,6 +377,10 @@ export class AppointmentService {
     await this.appointmentRepo.save(appointment);
 
     return appointment;
+    } catch (error) {
+      console.error('❌ Error in confirmAppointment:', error);
+      throw error;
+    }
   }
 
   // async DepositedAppointment(id: string) {
@@ -448,6 +457,48 @@ export class AppointmentService {
         await this.customerVoucherRepo.save(customerVoucher);
       }
     }
+
+    const staffUsers = await this.internalRepo.find({
+      where: {
+        role: { name: 'cashier' }, 
+        isActive: true,
+      },
+      select: ['id', 'full_name', 'email'],
+      relations: ['role'], 
+    });
+
+    if (staffUsers.length === 0) {
+      console.warn('Không có staff nào trong hệ thống để gửi thông báo hủy lịch');
+    }
+
+    if (staffUsers.length > 0) {
+      const customerName = appointment.customer?.full_name || 'Khách hàng';
+
+      const notificationPromises = staffUsers.map((staff) =>
+        this.notificationService.create({
+          title: 'Yêu cầu hủy lịch hẹn từ khách hàng',
+          content: `Khách hàng ${customerName} yêu cầu hủy lịch hẹn. (Mã: #${id.slice(-8).toUpperCase()}). Lý do: ${reason}`,
+          type: NotificationType.Warning,
+          userId: staff.id,
+          userType: 'internal',
+          actionUrl: ``, 
+          relatedType: 'cancel_request',
+        }),
+      );
+
+      Promise.allSettled(notificationPromises).catch((err) =>
+        console.error('Lỗi khi gửi thông báo cho staff:', err),
+      );
+    }
+
+    await this.mailService.sendCancelAppointmentEmail({
+      to: appointment.customer.email,
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        cancelReason: 'Được yêu cầu hủy bởi khách hàng',
+      },
+    });
 
     await this.appointmentRepo.save(appointment);
     return appointment;
@@ -700,7 +751,10 @@ export class AppointmentService {
 
     await this.notificationService.create({
       title: 'Lịch hẹn của bạn đã bị hủy',
-      content: `Lịch hẹn của bạn đã bị hủy. Chúng tôi xin lỗi vì sự bất tiện này. Để bù đắp, chúng tôi đã tạo voucher giảm ${appointment.depositAmount} cho bạn. Voucher sẽ được gửi qua email và thông báo.`,
+      content: `Lịch hẹn của bạn đã bị hủy. Chúng tôi xin lỗi vì sự bất tiện này. 
+      Để bù đắp, chúng tôi đã tạo voucher giảm ${appointment.depositAmount} cho bạn. 
+      Voucher sẽ được gửi qua email và thông báo. 
+      Vui lòng liên hệ bộ phận chăm sóc khách hàng để được hỗ trợ hoàn tiền đặt cọc.`,
       type: NotificationType.Warning,
       userId: appointment.customer.id,
       userType: 'customer',
@@ -708,6 +762,16 @@ export class AppointmentService {
       relatedId: appointment.id,
       relatedType: 'appointment',
     });
+
+    await this.mailService.sendCancelAppointmentEmail({
+      to: appointment.customer.email,
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        cancelReason: 'Nhân viên bận đột xuất',
+      },
+    });
+
 
     const voucherCode = `CANCEL_${appointment.id.slice(0, 8).toUpperCase()}_${Date.now()}`;
     const createVoucherDto = {
@@ -818,4 +882,74 @@ export class AppointmentService {
       relations: ['appointment', 'doctor'],
     });
   }
+
+async refundAppointment(
+  appointmentId: string,
+  dto: {
+    refundAmount: number;
+    refundMethod: 'cash' | 'qr' | 'card';
+    refundReason?: string;
+    staffId: string; 
+  },
+) {
+  const appointment = await this.findOne(appointmentId);
+
+  if (![AppointmentStatus.Cancelled, AppointmentStatus.Rejected].includes(appointment.status)) {
+    throw new BadRequestException('Chỉ có thể hoàn tiền cho lịch hẹn đã hủy hoặc bị từ chối');
+  }
+
+  const staff = await this.internalRepo.findOne({ where: { id: dto.staffId } });
+  if (!staff) {
+    throw new NotFoundException('Nhân viên xử lý hoàn tiền không tồn tại');
+  }
+
+  const refund = new AppointmentRefund();
+
+  refund.appointment = appointment;
+  refund.staff = staff; 
+
+  refund.refundAmount = dto.refundAmount;
+  refund.refundMethod = dto.refundMethod;
+  refund.refundReason = dto.refundReason;
+  refund.processedAt = new Date();
+
+  refund.refundStatus = RefundStatus.Completed;
+
+  await this.refundRepo.save(refund);
+
+  appointment.status = AppointmentStatus.Refunded;
+  await this.appointmentRepo.save(appointment);
+  return {
+    message: 'Hoàn tiền thành công',
+    refund, 
+    appointment,
+  };
+}
+
+async findRefundedAppointments() {
+  try {
+    const appointments = await this.appointmentRepo.find({
+      where: { status: AppointmentStatus.Refunded },
+      relations: ['customer', 'doctor', 'details', 'details.service', 'voucher'],
+      order: { createdAt: 'DESC' },
+    });
+    return appointments;
+  } catch (error) {
+    console.error('Error in findRefundedAppointments:', error);
+    throw new BadRequestException('Không thể lấy danh sách lịch hẹn đã hoàn tiền. Vui lòng thử lại sau.');
+  }
+}
+
+async findAllRefunds() {
+  try {
+    const refunds = await this.refundRepo.find({
+      relations: ['appointment', 'appointment.customer', 'appointment.doctor', 'staff'],
+      order: { createdAt: 'DESC' },
+    });
+    return refunds;
+  } catch (error) {
+    console.error('Error in findAllRefunds:', error);
+    throw new BadRequestException('Không thể lấy danh sách bản ghi hoàn tiền. Vui lòng thử lại sau.');
+  }
+}
 }

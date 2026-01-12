@@ -83,6 +83,16 @@ export class AppointmentController {
     return this.appointmentService.findAll();
   }
 
+  @Get('/refunded')
+findRefundedAppointments() {
+  return this.appointmentService.findRefundedAppointments();
+}
+
+@Get('/refunds')
+findAllRefunds() {
+  return this.appointmentService.findAllRefunds();
+}
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.appointmentService.findOne(id);
@@ -102,20 +112,19 @@ export class AppointmentController {
   }
 
   @Patch(':id/confirm')
-  confirm(@Param('id') id: string, @Body() staff: { id: string }) {
-    return this.appointmentService.confirmAppointment(id, staff.id);
+  confirm(@Param('id') id: string, @Body('id') staffId: string) {
+    return this.appointmentService.confirmAppointment(id, staffId);
   }
 
   @Patch(':id/arrived')
-  arrived(@Param('id') id: string, @Body() staff: { id: string }) {
+  arrived(@Param('id') id: string, @Body('id') staffId: string) {
     return this.appointmentService.updateStatus(id, AppointmentStatus.Arrived);
   }
 
   @Patch(':id/in-service')
-  inService(@Param('id') id: string, @Body() staff: { id: string }) {
+  inService(@Param('id') id: string) {
     return this.appointmentService.updateStatus(id, AppointmentStatus.InService);
   }
-
 
   @Patch(':id/completed')
   complete(@Param('id') id: string) {
@@ -156,19 +165,26 @@ export class AppointmentController {
     return this.appointmentService.requestCompleteByStaff(id, staffName);
   }
 
-  @Get(':id/test-change-status/:status')
-  async testChangeStatus(
-    @Param('id') id: string,
-    @Param('status') status: string,
-    @Query('apiKey') apiKey: string,
-  ) {
-    if (apiKey !== '3dotech') {
-      throw new BadRequestException('Invalid API key');
-    }
-    const validStatuses = Object.values(AppointmentStatus);
-    if (!validStatuses.includes(status as any)) {
-      throw new BadRequestException(`Invalid status: ${status}. Valid: ${validStatuses.join(', ')}`);
-    }
-    return this.appointmentService.updateStatus(id, status as any);
+  @Patch(':id/refund')
+async refundAppointment(
+  @Param('id') id: string,
+  @Body() body: {
+    refundAmount: number;
+    refundMethod: 'cash' | 'qr' | 'card';
+    refundReason?: string;
+    staffId: string;
+  },
+) {
+  if (!body.refundAmount || !body.refundMethod || !body.staffId) {
+    throw new BadRequestException('Thiếu thông tin hoàn tiền');
   }
+  return this.appointmentService.refundAppointment(id, {
+    refundAmount: body.refundAmount,
+    refundMethod: body.refundMethod,
+    refundReason: body.refundReason,
+    staffId: body.staffId,
+  });
+}
+
+
 }
